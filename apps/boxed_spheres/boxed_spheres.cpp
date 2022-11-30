@@ -43,7 +43,6 @@ int main(void)
             circle.triangles
         );
     }
-
     GLFWwindow * const window{render::glInitialize()};
     render::run(window);
 }

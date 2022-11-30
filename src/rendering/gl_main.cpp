@@ -16,7 +16,7 @@ glInitialize()
     /* Initialize the library */
     if (!glfwInit())
     {
-        throw std::exception{};
+        throw std::runtime_error{"Could not initialize glfw"};
     }
 
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
@@ -26,7 +26,7 @@ glInitialize()
     if (!window)
     {
         glfwTerminate();
-        throw std::exception{};
+        throw std::runtime_error{"Could not create gflw window"};
     }
 
     /* Make the window's context current */
@@ -34,8 +34,7 @@ glInitialize()
 
     if (glewInit() != GLEW_OK)
     {
-        std::cerr << "glewInit NOT OK" << std::endl;
-        throw std::exception();
+        throw std::runtime_error{"Could not initialize glew"};
     }
     std::cout << glGetString(GL_VERSION) << std::endl;
 

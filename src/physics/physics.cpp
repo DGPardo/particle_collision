@@ -38,6 +38,7 @@ Physics::
 advanceGroup(TriangleGroup & tri_group, scalar_t const dt) const
 {
     tri_group.position += tri_group.velocity * dt;
+    tri_group.orientation += tri_group.orientation_velocity*dt;
     // TODO: Handle external forces
     // tri_group.velocity += Physics::externalForces(tri_group) * dt;
     // TODO: Handle orientation
