@@ -29,9 +29,10 @@ scalar_t randomScalar()
 int main(void)
 {
     auto & tri_manager {TrianglesManager::getSingleton()};
-    constexpr auto circle = makeCircle<6>(0.05);
+    constexpr scalar_t radius{0.05};
+    constexpr auto circle {makeCircle<5>(radius)};
 
-    for (int i{0}; i < 10; ++i)
+    for (int i{0}; i < 3; ++i)
     {
         tri_manager.addGroup<circle.n_triangles>
         (

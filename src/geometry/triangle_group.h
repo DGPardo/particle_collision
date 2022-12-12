@@ -28,13 +28,14 @@ public:
     //- member functions
     std::vector<Triangle2> const & getTriangles() const;
     void addTriangle(Triangle2 coords);
+    std::vector<Triangle2> getAbsTriangles() const;
 
     //- member attributes
     Vector2 position;
     Vector2 velocity;
 
     scalar_t orientation;
-    scalar_t orientation_velocity;
+    scalar_t angular_velocity;
 
     scalar_t area;
     scalar_t moment_of_inertia;

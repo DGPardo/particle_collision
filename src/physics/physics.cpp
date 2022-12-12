@@ -39,7 +39,7 @@ Physics::
 advanceGroup(TriangleGroup & tri_group, scalar_t const dt) const
 {
     tri_group.position += tri_group.velocity * dt;
-    tri_group.orientation += tri_group.orientation_velocity*dt;
+    tri_group.orientation += tri_group.angular_velocity*dt;
     // TODO: Handle external forces
     // tri_group.velocity += Physics::externalForces(tri_group) * dt;
     // TODO: Handle orientation
@@ -74,7 +74,7 @@ advance()
     {
         for(label_t ngid{gid + 1}; ngid != tri_groups.size(); ++ngid)
         {
-            if (algo::areOverlapping(tri_groups[gid], tri_groups[ngid]))
+            if ([[maybe_unused]]Vector2 const * pt = algo::areOverlapping(tri_groups[gid], tri_groups[ngid]))
             {
                 algo::pointMassRigidCollision
                 (

@@ -16,7 +16,7 @@ pointMassRigidCollision
     Vector2 const normal{unitVector(tri_2.position - tri_1.position)};
     Vector2 const tangent{-normal[1], normal[0]};
 
-    scalar_t const twoK {tri_1.area*magSqr(tri_1.velocity) + tri_2.area*magSqr(tri_2.velocity)};  // 2 * kinetic energy
+    scalar_t const two_k {tri_1.area*magSqr(tri_1.velocity) + tri_2.area*magSqr(tri_2.velocity)};  // 2 * kinetic energy
 
     // Initial velocities prior to collide
     scalar_t const v1_n {dot(tri_1.velocity, normal)};
@@ -46,7 +46,7 @@ pointMassRigidCollision
     };
     scalar_t const c
     {
-        -twoK + tri_1.area*v1_t*v1_t + tri_2.area*v2_t*v2_t + m_n*m_n/tri_1.area
+        -two_k + tri_1.area*v1_t*v1_t + tri_2.area*v2_t*v2_t + m_n*m_n/tri_1.area
     };
 
     //- Velocities after collision
@@ -56,6 +56,29 @@ pointMassRigidCollision
 
     tri_1.velocity = (v1_t*tangent) + (v1_nf*normal);
     tri_2.velocity = v2_t*tangent + v2_nf*normal;
+
+//------------------------------------------------------------------------------
+
+    scalar_t l_t  // total angular momentum
+    {
+          tri_1.moment_of_inertia * tri_1.angular_velocity
+        + tri_2.moment_of_inertia * tri_2.angular_velocity
+    };
+
+    scalar_t two_k_r // total rotational energy
+    {
+          tri_1.moment_of_inertia * tri_1.angular_velocity*tri_1.angular_velocity
+        + tri_2.moment_of_inertia * tri_2.angular_velocity*tri_2.angular_velocity
+    };
+
+    scalar_t const i_1 = tri_1.moment_of_inertia;
+    scalar_t const i_2 = tri_2.moment_of_inertia;
+    scalar_t const i_12 = i_1*i_2;
+
+    tri_2.angular_velocity = i_12*l_t + sqrt(i_2*(i_12*two_k_r - i_1*l_t*l_t + two_k_r));
+    tri_2.angular_velocity /= i_12*i_2 + i_12;
+
+    tri_1.angular_velocity = (l_t - i_2*tri_2.angular_velocity) / i_1;
 }
 
 

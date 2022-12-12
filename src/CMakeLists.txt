@@ -22,5 +22,6 @@ target_include_directories(
 
 # Unit test
 add_subdirectory(geometry/unit_test)
+add_subdirectory(math/unit_test)
 add_subdirectory(physics/unit_test)
 
