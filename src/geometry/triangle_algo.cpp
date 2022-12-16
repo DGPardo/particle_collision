@@ -24,7 +24,7 @@ isPointInsideTriangle(Triangle2 const & tri_1, Vector2 const & pt)
 }
 
 
-Vector2 const *
+std::unique_ptr<Vector2>
 algo::
 isOverlapping(Triangle2 const & tri_1, Triangle2 const & tri_2)
 {
@@ -32,24 +32,25 @@ isOverlapping(Triangle2 const & tri_1, Triangle2 const & tri_2)
     {
         if (isPointInsideTriangle(tri_1, tri_2[v_id]))
         {
-            return &(tri_2[v_id]);
+            return std::make_unique<Vector2>(tri_2[v_id]);
         }
     }
     return nullptr;
 }
 
 
-Vector2 const *
+std::unique_ptr<Vector2>
 algo::
 areOverlapping(TriangleGroup const & group1, TriangleGroup const & group2)
 {
-    std::vector<Triangle2> const & triangles_1 {group1.getAbsTriangles()};
-    std::vector<Triangle2> const & triangles_2 {group2.getAbsTriangles()};
+    std::vector<Triangle2> triangles_1 {group1.getAbsTriangles()};
+    std::vector<Triangle2> triangles_2 {group2.getAbsTriangles()};
     for (Triangle2 const & triangle_1 : triangles_1)
     {
         for (Triangle2 const & triangle_2 : triangles_2)
         {
-            if (Vector2 const * pt = isOverlapping(triangle_1, triangle_2))
+            std::unique_ptr<Vector2> pt {isOverlapping(triangle_1, triangle_2)};
+            if (pt)
             {
                 return pt;
             }
@@ -59,14 +60,14 @@ areOverlapping(TriangleGroup const & group1, TriangleGroup const & group2)
 }
 
 
-bool
+scalar_t
 algo::
-isPointOnASegment(Segment2 const & s, Vector2 const & pt, scalar_t tol)
+isPointOnASegment(Segment2 const & s, Vector2 const & pt)
 {
-    Vector2 const direction{pt - s[0]};
-    Vector2 const bdry_plane{s[1] - s[0]};
-    Vector2 const normal{direction - dot(direction, bdry_plane)*bdry_plane};
-    return magSqr(normal) < (tol*tol);
+    Vector2 const rel{pt - s[0]};
+    Vector2 const bdry_plane{unitVector(s[1] - s[0])};
+    Vector2 const normal{rel - dot(rel, bdry_plane)*bdry_plane};
+    return magSqr(normal);
 }
 
 

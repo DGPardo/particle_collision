@@ -13,10 +13,11 @@ class TriangleGroup;
 namespace algo
 {
 
-void pointMassRigidCollision
+void rigidBodyCollision
 (
     TriangleGroup & tri_1,
-    TriangleGroup & tri_2
+    TriangleGroup & tri_2,
+    Vector2 const & contact_pt
 );
 
 

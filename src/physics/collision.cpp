@@ -3,82 +3,94 @@
 #include <math.h>
 #include "geometry/triangle_algo.h"
 #include "geometry/triangle_group.h"
+#include "geometry/coordinate_transformation.h"
+
+namespace
+{
+    Vector2 velocityOfPointOnRigidBody(TriangleGroup const & rigid_body, Vector2 const & relative_position)
+    {
+        // relative_position must be the position w.r.t to the rigid_body centroid/"position" (rotation center)
+        return Vector2
+        {
+            -relative_position[1]*rigid_body.angular_velocity + rigid_body.velocity[0],
+             relative_position[0]*rigid_body.angular_velocity + rigid_body.velocity[1]
+        };
+    }
+}
+
+
+Vector2 getNormalAtPt(TriangleGroup const & rigid_body, Vector2 const & rel_pt)
+{
+    scalar_t min_dst{1};
+    Vector2 edge_direction;
+    for (Segment2 const & s : rigid_body.getBoundary())
+    {
+        scalar_t dst = algo::isPointOnASegment(s, rel_pt);
+        if (dst < min_dst)
+        {
+            edge_direction = s[1] - s[0];
+            min_dst = dst;
+        }
+    }
+    return unitVector(Vector2{-edge_direction[1], edge_direction[0]});
+}
 
 
 void
 algo::
-pointMassRigidCollision
+rigidBodyCollision
 (
     TriangleGroup & tri_1,
-    TriangleGroup & tri_2
+    TriangleGroup & tri_2,
+    Vector2 const & contact_pt
 )
 {
-    Vector2 const normal{unitVector(tri_2.position - tri_1.position)};
-    Vector2 const tangent{-normal[1], normal[0]};
-
-    scalar_t const two_k {tri_1.area*magSqr(tri_1.velocity) + tri_2.area*magSqr(tri_2.velocity)};  // 2 * kinetic energy
-
-    // Initial velocities prior to collide
-    scalar_t const v1_n {dot(tri_1.velocity, normal)};
-    scalar_t const v2_n {dot(tri_2.velocity, normal)};
-    scalar_t const m_n {v1_n*tri_1.area + v2_n*tri_2.area};  // linear momentum along normal direction
-
-    scalar_t const v1_t {dot(tri_1.velocity, tangent)};
-    scalar_t const v2_t {dot(tri_2.velocity, tangent)};
-
     /*
-    Using momentum conservation and energy conservation
-    it is possible to find a solution to this problem.
-    We assume no friction and therefore the tangential component
-    of linear momentum is constant. Only a balance in the normal
-    component needs to be solved.
-    This leads to a quadratic equation. TODO: Investigate two solutions
+    Impulse-based reaction model
+    https://en.wikipedia.org/wiki/Collision_response#Impulse-based_contact_model
     */
 
-    // Quadratic Equation [a, b, c] * [v2_n^2, v2_n, 1]
-    scalar_t const a
-    {
-        tri_2.area*tri_2.area/tri_1.area + tri_2.area
-    };
-    scalar_t const b
-    {
-        scalar_t(-2.0)*m_n*tri_2.area/tri_1.area
-    };
-    scalar_t const c
-    {
-        -two_k + tri_1.area*v1_t*v1_t + tri_2.area*v2_t*v2_t + m_n*m_n/tri_1.area
-    };
+    // Relative velocity at contact pt
+    Vector2 rel_pos_1 {algo::toRelative(tri_1, contact_pt)};
+    Vector2 rel_pos_2 {algo::toRelative(tri_2, contact_pt)};
 
-    //- Velocities after collision
-    scalar_t const discriminant{b*b - 4*a*c};
-    scalar_t const v2_nf = (-b + sqrt(discriminant)) / (2*a);
-    scalar_t const v1_nf = (m_n - tri_2.area*v2_nf) / tri_1.area;
+    Vector2 const v_contact_1{velocityOfPointOnRigidBody(tri_1, rel_pos_1)};
+    Vector2 const v_contact_2{velocityOfPointOnRigidBody(tri_2, rel_pos_2)};
+    Vector2 const normal{getNormalAtPt(tri_1, rel_pos_1)};
 
-    tri_1.velocity = (v1_t*tangent) + (v1_nf*normal);
-    tri_2.velocity = v2_t*tangent + v2_nf*normal;
-
-//------------------------------------------------------------------------------
-
-    scalar_t l_t  // total angular momentum
+    auto helper = [&normal](Vector2 const & r) -> scalar_t
     {
-          tri_1.moment_of_inertia * tri_1.angular_velocity
-        + tri_2.moment_of_inertia * tri_2.angular_velocity
+        // Evaluating a convoluted cross product: ((r x n) x r).dot(n)
+        return r[0]*r[0]*normal[1]*normal[1]
+             + r[1]*r[1]*normal[0]*normal[0]
+             - 2.0f*r[0]*r[1]*normal[0]*normal[1];
     };
 
-    scalar_t two_k_r // total rotational energy
+    constexpr scalar_t e = 1; // elasticity of the impact
+    scalar_t const numerator = -(1+e)*dot(normal, v_contact_2 - v_contact_1);
+
+    scalar_t const denominator =
+          1.0f/tri_1.area
+        + 1.0f/tri_2.area
+        + helper(rel_pos_1) / tri_1.moment_of_inertia
+        + helper(rel_pos_2) / tri_2.moment_of_inertia;
+
+    scalar_t const impulse_magnitude
     {
-          tri_1.moment_of_inertia * tri_1.angular_velocity*tri_1.angular_velocity
-        + tri_2.moment_of_inertia * tri_2.angular_velocity*tri_2.angular_velocity
+        numerator /
+        (
+            denominator > 0  // handling possible division by zero
+            ? denominator + std::numeric_limits<scalar_t>::epsilon()
+            : denominator - std::numeric_limits<scalar_t>::epsilon()
+        )
     };
 
-    scalar_t const i_1 = tri_1.moment_of_inertia;
-    scalar_t const i_2 = tri_2.moment_of_inertia;
-    scalar_t const i_12 = i_1*i_2;
+    Vector2 const impulse{impulse_magnitude * normal};
+    tri_1.velocity -= impulse / tri_1.area;
+    tri_2.velocity += impulse / tri_2.area;
 
-    tri_2.angular_velocity = i_12*l_t + sqrt(i_2*(i_12*two_k_r - i_1*l_t*l_t + two_k_r));
-    tri_2.angular_velocity /= i_12*i_2 + i_12;
-
-    tri_1.angular_velocity = (l_t - i_2*tri_2.angular_velocity) / i_1;
+    tri_1.angular_velocity -= impulse_magnitude/tri_1.moment_of_inertia*(rel_pos_1[0]*normal[1] - normal[0]*rel_pos_1[1]);
+    tri_2.angular_velocity += impulse_magnitude/tri_2.moment_of_inertia*(rel_pos_2[0]*normal[1] - normal[0]*rel_pos_2[1]);
 }
 
 
@@ -89,7 +101,6 @@ rigidWallCollision
     Vector2 const & inward_wall_normal, Vector2 & velocity
 )
 {
-
     scalar_t const v1_n {dot(velocity, inward_wall_normal)};
     if (v1_n < 0)
     {

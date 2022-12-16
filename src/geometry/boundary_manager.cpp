@@ -10,7 +10,6 @@ getSingleton()
 }
 
 
-
 std::vector<Segment2> const &
 BoundariesManager::
 getBoundary() const

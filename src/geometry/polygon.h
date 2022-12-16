@@ -43,7 +43,7 @@ private:
 
 
 template<label_t NVerts>
-constexpr ConvexPolygon<NVerts> makeCircle(scalar_t const radius)
+constexpr ConvexPolygon<NVerts> makePolygon(scalar_t const radius)
 {
     scalar_t theta{0};
     scalar_t const delta_theta{2*scalar_t(M_PI)/(NVerts)};

@@ -25,6 +25,8 @@ public:
 
 private:
     BoundariesManager() = default;
+    BoundariesManager(BoundariesManager const & other) = delete;
+    BoundariesManager(BoundariesManager&& other) = delete;
     std::unique_ptr<TriangleGroup> _group;
     std::vector<Segment2> _boundary;
 };

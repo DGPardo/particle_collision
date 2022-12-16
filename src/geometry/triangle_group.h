@@ -26,9 +26,14 @@ public:
     TriangleGroup(TriangleGroup const & other) = delete;
 
     //- member functions
-    std::vector<Triangle2> const & getTriangles() const;
     void addTriangle(Triangle2 coords);
+    void addBoundarySegment(Segment2 coords);
+
+    std::vector<Triangle2> const & getTriangles() const;
     std::vector<Triangle2> getAbsTriangles() const;
+
+    std::vector<Segment2> const & getBoundary() const;
+    std::vector<Segment2> getAbsBoundary() const;
 
     //- member attributes
     Vector2 position;
@@ -42,6 +47,7 @@ public:
 
 private:
     std::vector<Triangle2> _triangles;  // this coordinates are relative to position
+    std::vector<Segment2> _boundary;
 };
 
 

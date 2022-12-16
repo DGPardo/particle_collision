@@ -10,6 +10,8 @@ namespace render
 
 void drawTriangleGroup(TriangleGroup const & group);
 
+void drawBoundary();
+
 }
 
 

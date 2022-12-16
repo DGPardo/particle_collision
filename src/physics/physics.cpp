@@ -52,7 +52,7 @@ advance()
 {
     scalar_t const dt = timeSince(last_time);
     last_time = timeNow();
-    std::cout << "Time elapsed: " << timeSince(start_time) << std::endl;
+    std::cout << "Time elapsed: " << timeSince(start_time) << "  FPS=" << (1.0/dt) << std::endl;
 
     std::vector<TriangleGroup> & tri_groups{tri_manager.getTriangleGroups()};
     for (auto & tri_group : tri_groups)
@@ -66,7 +66,6 @@ advance()
         algo::boundaryCollision(bdry, tri_group);  // if all inside, no collision will happen
     }
 
-
     if (tri_groups.size() <= 1) return;
 
     // TODO: Use nearest-neighbours to optimize this code
@@ -74,11 +73,14 @@ advance()
     {
         for(label_t ngid{gid + 1}; ngid != tri_groups.size(); ++ngid)
         {
-            if ([[maybe_unused]]Vector2 const * pt = algo::areOverlapping(tri_groups[gid], tri_groups[ngid]))
+            std::unique_ptr<Vector2> pt {algo::areOverlapping(tri_groups[gid], tri_groups[ngid])};
+            if (pt)
             {
-                algo::pointMassRigidCollision
+                algo::rigidBodyCollision
                 (
-                    tri_groups[gid], tri_groups[ngid]
+                    tri_groups[gid],
+                    tri_groups[ngid],
+                    *pt
                 );
                 break;
             }

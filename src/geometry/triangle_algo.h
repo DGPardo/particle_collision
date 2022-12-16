@@ -121,17 +121,17 @@ isPointInsidePolygon(TriangleGroup const & g, Vector2 const & pt);
 
 //------------------------------------------------------------------------------
 
-Vector2 const *
+std::unique_ptr<Vector2>
 isOverlapping(Triangle2 const & tri_1, Triangle2 const & tri_2);
 
 
-Vector2 const *
+std::unique_ptr<Vector2>
 areOverlapping(TriangleGroup const & group1, TriangleGroup const & group2);
 
 //------------------------------------------------------------------------------
 
-bool
-isPointOnASegment(Segment2 const & s, Vector2 const & pt, scalar_t const tol);
+scalar_t
+isPointOnASegment(Segment2 const & s, Vector2 const & pt);
 
 }
 

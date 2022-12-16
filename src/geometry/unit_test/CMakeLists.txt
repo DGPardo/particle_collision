@@ -25,3 +25,19 @@ target_include_directories(
 
 add_test(NAME TestPolygon
          COMMAND TestPolygon)
+
+
+################################################################################
+
+
+add_executable(TestCoordTransformation Test_coordinate_transformation.cpp)
+
+target_link_libraries(TestCoordTransformation ${CONAN_LIBS} PhysxLib)
+target_include_directories(
+    TestCoordTransformation PRIVATE
+    ${CONAN_INCLUDE_DIRS}
+    ${PROJECT_SOURCE_DIR}/src/
+)
+
+add_test(NAME TestCoordTransformation
+        COMMAND TestCoordTransformation)

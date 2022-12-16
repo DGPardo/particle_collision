@@ -47,12 +47,12 @@ TEST(TriangleAlgo, isIntersecting)
     //-Evaluate test function
     scalar_t const area1 {algo::triangleArea(tri1)};
     scalar_t const area2 {algo::triangleArea(tri2)};
-    Vector2 const * const isOverlapping{algo::isOverlapping(tri1, tri2)};
+    std::unique_ptr<Vector2> isOverlapping{algo::isOverlapping(tri1, tri2)};
 
     //- Assertions
     ASSERT_NEAR(expected_area, area1, TOL);
     ASSERT_NEAR(expected_area, area2, TOL);
-    EXPECT_TRUE(isOverlapping != nullptr);
+    EXPECT_TRUE(isOverlapping.get() != nullptr);
 }
 
 
@@ -61,7 +61,7 @@ TEST(TriangleAlgo, areaMomentOfCircle)
     constexpr label_t n_vertices{360*2};
     constexpr Vector2 origin{0, 0};
     constexpr scalar_t radius{10.5};
-    constexpr auto circle{makeCircle<n_vertices>(radius)};
+    constexpr auto circle{makePolygon<n_vertices>(radius)};
 
     constexpr scalar_t r4{radius*radius*radius*radius};
 
