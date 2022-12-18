@@ -5,9 +5,6 @@
 
 #include <chrono>
 #include <exception>
-#include <thread>
-#include <atomic>
-#include <mutex>
 
 
 GLFWwindow *
@@ -55,44 +52,25 @@ render::
 run(GLFWwindow * const window)
 {
     Physics & physics{Physics::getSingleton()};
-    std::atomic<bool> refreshDraw{true};
-    std::mutex mtx;
-
-    auto advancePhysics =[&physics, &refreshDraw, &mtx](std::stop_token stoken)
-    {
-        while (!stoken.stop_requested())
-        {
-            std::lock_guard lck(mtx);
-            physics.advance();
-            refreshDraw = true;
-        }
-    };
-    std::jthread physicsThread(advancePhysics);
-
     TrianglesManager & tri_manager{physics.tri_manager};
 
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
-        if (refreshDraw)
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        physics.advance();
+
+        for (auto const & triangle_group : tri_manager.getTriangleGroups())
         {
-            glClear(GL_COLOR_BUFFER_BIT);
-            std::lock_guard lck(mtx);
-            for (auto const & triangle_group : tri_manager.getTriangleGroups())
-            {
-                render::drawTriangleGroup(triangle_group);
-            }
-            render::drawBoundary();
-            refreshDraw = false;
+            render::drawTriangleGroup(triangle_group);
         }
+
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
         /* Poll for and process events */
         glfwPollEvents();
     }
-    physicsThread.request_stop();
-    physicsThread.join();
-
     glfwTerminate();
 }
