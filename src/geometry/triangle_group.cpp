@@ -37,7 +37,7 @@ TriangleGroup::
 addTriangle(Triangle2 coords)
 {
   area += algo::triangleArea(coords);
-  moment_of_inertia += algo::triangleAreaMoment(coords, area, position);
+  moment_of_inertia += algo::triangleAreaMoment(coords, area, Vector2{0, 0});
   _triangles.emplace_back(std::move(coords));
 }
 

@@ -75,14 +75,10 @@ rigidBodyCollision
         + helper(rel_pos_1) / tri_1.moment_of_inertia
         + helper(rel_pos_2) / tri_2.moment_of_inertia;
 
+    constexpr scalar_t delta[2] = {-std::numeric_limits<scalar_t>::epsilon(), std::numeric_limits<scalar_t>::epsilon()};
     scalar_t const impulse_magnitude
     {
-        numerator /
-        (
-            denominator > 0  // handling possible division by zero
-            ? denominator + std::numeric_limits<scalar_t>::epsilon()
-            : denominator - std::numeric_limits<scalar_t>::epsilon()
-        )
+        numerator / (denominator + delta[denominator > 0])
     };
 
     Vector2 const impulse{impulse_magnitude * normal};

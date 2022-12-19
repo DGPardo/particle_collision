@@ -6,6 +6,9 @@
 #include <chrono>
 #include <exception>
 
+#include <thread>
+#include <mutex>
+
 
 GLFWwindow *
 render::
@@ -52,7 +55,6 @@ render::
 run(GLFWwindow * const window)
 {
     Physics & physics{Physics::getSingleton()};
-    TrianglesManager & tri_manager{physics.tri_manager};
 
     while (!glfwWindowShouldClose(window))
     {
@@ -60,11 +62,8 @@ run(GLFWwindow * const window)
         glClear(GL_COLOR_BUFFER_BIT);
 
         physics.advance();
-
-        for (auto const & triangle_group : tri_manager.getTriangleGroups())
-        {
-            render::drawTriangleGroup(triangle_group);
-        }
+        render::drawTriangleGroups();
+        render::drawBoundary();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

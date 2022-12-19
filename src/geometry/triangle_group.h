@@ -23,7 +23,7 @@ public:
 
     // Do not allow empty constructor or copy constructor
     TriangleGroup() = delete;
-    TriangleGroup(TriangleGroup const & other) = delete;
+    TriangleGroup(TriangleGroup const & other) = default;
 
     //- member functions
     void addTriangle(Triangle2 coords);

@@ -58,7 +58,7 @@ constexpr ConvexPolygon<NVerts> makePolygon(scalar_t const radius)
 }
 
 
-constexpr ConvexPolygon<4> makeSquare(Vector2 lwr_left, Vector2 upr_right)
+constexpr ConvexPolygon<4> makeRectangle(Vector2 lwr_left, Vector2 upr_right)
 {
     Vector2 const dx {upr_right[0] - lwr_left[0], 0};
     return ConvexPolygon<4>{{lwr_left, lwr_left + dx, upr_right, upr_right - dx}};

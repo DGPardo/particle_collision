@@ -3,9 +3,30 @@
 #include "geometry/boundary_manager.h"
 #include "geometry/triangle_group.h"
 #include "gl_traits.h"
+#include "physics/physics.h"
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
+
+
+void 
+render::
+drawTriangleGroups() //(std::mutex & mtx)
+{
+    Physics & physics{Physics::getSingleton()};
+    TrianglesManager & tri_manager{physics.tri_manager};
+    
+    // std::unique_lock lck(mtx); 
+    // lck.lock();
+    //- Copying is faster rendering
+    std::vector<TriangleGroup> const groups {tri_manager.getTriangleGroups()};
+    // lck.unlock();
+
+    for (auto const & triangle_group : groups)
+    {
+        render::drawTriangleGroup(triangle_group);
+    }
+}
 
 
 void
@@ -49,15 +70,21 @@ drawTriangleGroup(TriangleGroup const & group)
 
 void
 render::
-drawBoundary()
+drawBoundary() //(std::mutex & mtx)
 {
     BoundariesManager & boundaries {BoundariesManager::getSingleton()};
-    label_t const n_vertices{boundaries.getBoundary().size() * 2};
+    
+    // std::unique_lock lck(mtx);
+    // lck.lock();
+    std::vector<Segment2> const boundary {boundaries.getBoundary()};
+    // lck.unlock();
+
+    label_t const n_vertices{boundary.size() * 2};
     glBufferData
     (
         GL_ARRAY_BUFFER,
         n_vertices * 2 * sizeof(scalar_t),  // 2 floats per vertex coord
-        boundaries.getBoundary().begin()->data(),
+        boundary.begin()->data(),
         GL_STATIC_DRAW
     );
 

@@ -55,10 +55,34 @@ advance()
     std::cout << "Time elapsed: " << timeSince(start_time) << "  FPS=" << (1.0/dt) << std::endl;
 
     std::vector<TriangleGroup> & tri_groups{tri_manager.getTriangleGroups()};
+
+    scalar_t energy = 0;
+    scalar_t linMom = 0;
+    scalar_t angMom = 0;
+    
+    auto computeEnergy = [](TriangleGroup const & g) -> scalar_t
+    {
+        return 0.5*(g.area*magSqr(g.velocity)) + 0.5*g.moment_of_inertia*g.angular_velocity*g.angular_velocity;
+    };
+
+    auto linMomentum = [](TriangleGroup const & g) -> scalar_t
+    {
+        return g.area*mag(g.velocity);
+    };
+
+    auto angMomentum = [](TriangleGroup const & g) -> scalar_t
+    {
+        return g.moment_of_inertia*g.angular_velocity;
+    };
+
     for (auto & tri_group : tri_groups)
     {
+        energy += computeEnergy(tri_group);
+        linMom += linMomentum(tri_group);
+        angMom += angMomentum(tri_group);
         advanceGroup(tri_group, dt);
     }
+    std::cout << "energy: " << energy << "  lin: " << linMom << "  ang: " << angMom << std::endl;
 
     std::vector<Segment2> const & bdry{BoundariesManager::getSingleton().getBoundary()};
     for (TriangleGroup & tri_group : tri_groups)
@@ -96,3 +120,6 @@ Physics(std::chrono::high_resolution_clock::time_point const & now)
     , tri_manager{TrianglesManager::getSingleton()}
     , bdry_manager{BoundariesManager::getSingleton()}
 {};
+
+
+

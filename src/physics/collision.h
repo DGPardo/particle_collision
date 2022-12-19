@@ -34,6 +34,8 @@ void boundaryCollision
 );
 
 
+void detectCollisions();
+
 }
 
 #endif

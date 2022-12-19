@@ -52,8 +52,8 @@ triangleAreaMoment(Triangle2 const & verts, scalar_t const area, Vector2 const &
 
         std::array<scalar_t, 2> delta_r
         {
-            (l1 - 1/3.f)*verts[0][0] + (l2 - 1/3.f)*verts[1][0] + (2/3.f-l1-l2)*verts[2][0],
-            (l1 - 1/3.f)*verts[0][1] + (l2 - 1/3.f)*verts[1][1] + (2/3.f-l1-l2)*verts[2][1]
+            (l1-1.f/3.f)*verts[0][0] + (l2-1.f/3.f)*verts[1][0] + (2.f/3.f-l1-l2)*verts[2][0],
+            (l1-1.f/3.f)*verts[0][1] + (l2-1.f/3.f)*verts[1][1] + (2.f/3.f-l1-l2)*verts[2][1]
         };
         return delta_r[0]*delta_r[0] + delta_r[1]*delta_r[1];
     };
@@ -67,7 +67,7 @@ triangleAreaMoment(Triangle2 const & verts, scalar_t const area, Vector2 const &
             {
                 return r_sq(l1, l2);
             };
-            return algo::integral1(inner, 0, 1 - l2);
+            return algo::integral1(inner, 0, 1-l2);
         };
         return algo::integral1(outer, 0, 1);
     };
@@ -76,7 +76,7 @@ triangleAreaMoment(Triangle2 const & verts, scalar_t const area, Vector2 const &
     scalar_t const area_moment {2 * area * integrate()};
 
     //- Parallel axis theorem ==> Move moment of inertia
-    Vector2 centroid {1/3.f * (verts[0] + verts[1] + verts[2])};
+    Vector2 centroid {1.f/3.f * (verts[0] + verts[1] + verts[2])};
     return area_moment + area*magSqr(pt - centroid);
 }
 

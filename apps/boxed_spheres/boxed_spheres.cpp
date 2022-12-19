@@ -32,28 +32,28 @@ int main(void)
 
     constexpr Vector2 c1{-0.1, -0.02};
     constexpr Vector2 c2{0.1, 0.02};
-    constexpr auto bar{makeSquare(c1, c2)};
-    constexpr auto ball{makePolygon<36>(0.05)};
-
+    constexpr auto bar_h{makeRectangle(c1, c2)};
+    
+    constexpr Vector2 c3{-0.02, -0.1};
+    constexpr Vector2 c4{0.02, 0.1};
+    constexpr auto bar_v{makeRectangle(c3, c4)};
+    
     tri_manager.addGroup
     (
         Vector2{0, 0},
         Vector2{0, 0},
-        bar
+        bar_h
     );
 
     tri_manager.addGroup
     (
-        Vector2{0.07, -0.5},
-        Vector2{0, 0.5},
-        ball
+        Vector2{0.0, -0.3},
+        Vector2{0, 0.1},
+        bar_v
     );
-
+    
     auto & bdry_manager {BoundariesManager::getSingleton()};
-    constexpr Vector2 corner1{-1, -1};
-    constexpr Vector2 corner2{1, 1};
-    constexpr auto domain{makeSquare(corner1, corner2)};
-    // constexpr auto domain{makePolygon<180>(1)};
+    constexpr auto domain{makePolygon<180>(1)};
     bdry_manager.setBoundary(domain);
 
     GLFWwindow * const window{render::glInitialize()};
