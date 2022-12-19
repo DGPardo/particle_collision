@@ -3,6 +3,11 @@
 
 
 #include "math/vector_math.h"
+#include "geometry/segment.h"
+#include <vector>
+
+
+class TriangleGroup;
 
 
 namespace algo
@@ -10,15 +15,23 @@ namespace algo
 
 void pointMassRigidCollision
 (
-    scalar_t const mass1, Vector2 const & position1, Vector2 & velocity1,
-    scalar_t const mass2, Vector2 const & position2, Vector2 & velocity2
+    TriangleGroup & tri_1,
+    TriangleGroup & tri_2
 );
 
 
 void rigidWallCollision
 (
-    Vector2 const & wall_normal, Vector2 & velocity
+    Vector2 const & inward_wall_normal, Vector2 & velocity
 );
+
+
+void boundaryCollision
+(
+    // - Boundary must be a convex polygon
+    std::vector<Segment2> const & boundary_segments, TriangleGroup & g
+);
+
 
 }
 

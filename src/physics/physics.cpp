@@ -2,6 +2,7 @@
 
 #include "collision.h"
 #include "geometry/triangle_algo.h"
+#include "geometry/triangle_group.h"
 
 #include <numeric>
 #include <set>
@@ -51,33 +52,20 @@ advance()
 {
     scalar_t const dt = timeSince(last_time);
     last_time = timeNow();
+    std::cout << "Time elapsed: " << timeSince(start_time) << std::endl;
 
     std::vector<TriangleGroup> & tri_groups{tri_manager.getTriangleGroups()};
-
     for (auto & tri_group : tri_groups)
     {
         advanceGroup(tri_group, dt);
     }
 
-    for (auto & tri_group : tri_groups)
+    std::vector<Segment2> const & bdry{BoundariesManager::getSingleton().getBoundary()};
+    for (TriangleGroup & tri_group : tri_groups)
     {
-        if (tri_group.position[0] > 1)
-        {
-            algo::rigidWallCollision(Vector2{-1, 0}, tri_group.velocity);
-        }
-        else if (tri_group.position[1] > 1)
-        {
-            algo::rigidWallCollision(Vector2{0, -1}, tri_group.velocity);
-        }
-        else if (tri_group.position[0] < -1)
-        {
-            algo::rigidWallCollision(Vector2{1, 0}, tri_group.velocity);
-        }
-        else if (tri_group.position[1] < -1)
-        {
-            algo::rigidWallCollision(Vector2{0, 1}, tri_group.velocity);
-        }
+        algo::boundaryCollision(bdry, tri_group);  // if all inside, no collision will happen
     }
+
 
     if (tri_groups.size() <= 1) return;
 
@@ -90,8 +78,7 @@ advance()
             {
                 algo::pointMassRigidCollision
                 (
-                    tri_groups[gid].area, tri_groups[gid].position,  tri_groups[gid].velocity,
-                    tri_groups[ngid].area,tri_groups[ngid].position, tri_groups[ngid].velocity
+                    tri_groups[gid], tri_groups[ngid]
                 );
                 break;
             }
@@ -104,5 +91,6 @@ Physics::
 Physics(std::chrono::high_resolution_clock::time_point const & now)
     : start_time{now}
     , last_time{now}
-    , tri_manager(TrianglesManager::getSingleton())
+    , tri_manager{TrianglesManager::getSingleton()}
+    , bdry_manager{BoundariesManager::getSingleton()}
 {};

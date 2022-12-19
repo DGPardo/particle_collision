@@ -1,8 +1,7 @@
 #include "geometry/polygon.h"
 #include "geometry/triangles_manager.h"
+#include "geometry/boundary_manager.h"
 #include "rendering/gl_main.h"
-
-#include <iostream>
 
 #include <random>
 #include <ctime>
@@ -21,7 +20,7 @@ scalar_t randomScalar()
 }
 
 
-Vector2 randomVector()
+    Vector2 randomVector()
 {
     return {randomScalar(), randomScalar()};
 }
@@ -29,20 +28,23 @@ Vector2 randomVector()
 
 int main(void)
 {
-    TrianglesManager & tri_manager {TrianglesManager::getSingleton()};
-    for (int obj_id{0}; obj_id < 2; ++obj_id)
+    auto & tri_manager {TrianglesManager::getSingleton()};
+    constexpr auto circle = makeCircle<6>(0.05);
+
+    for (int i{0}; i < 10; ++i)
     {
-        scalar_t const radius{0.05};
-        Circle<12> circle{radius};
-        Vector2 const initial_position{randomVector()};
-        Vector2 const initial_velocity{randomVector()};
         tri_manager.addGroup<circle.n_triangles>
         (
-            initial_position,
-            initial_velocity,
+            randomVector(),
+            randomVector(),
             circle.triangles
         );
     }
+
+    auto & bdry_manager {BoundariesManager::getSingleton()};
+    constexpr auto domain{makeCircle<36>(1)};
+    bdry_manager.setBoundary(domain);
+
     GLFWwindow * const window{render::glInitialize()};
     render::run(window);
 }

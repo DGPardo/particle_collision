@@ -4,6 +4,7 @@
 
 #include "triangle.h"
 #include "triangle_group.h"
+#include "segment.h"
 #include <vector>
 
 
@@ -20,14 +21,11 @@ public:
         std::array<Triangle2, n> const & triangles
     );
 
-    void addInGroup(label_t const gid, Triangle2 tri_verts);
-
     std::vector<TriangleGroup> & getTriangleGroups();
 
 private:
     TrianglesManager() = default;
     std::vector<TriangleGroup> _triangleGroups;
-    label_t _last_id;
 };
 
 
@@ -53,6 +51,7 @@ addGroup
             std::move(velocity)
         )
     };
+
     for (auto const & triangle : triangles)
     {
         group.addTriangle(triangle);

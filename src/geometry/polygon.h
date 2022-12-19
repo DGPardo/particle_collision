@@ -15,11 +15,13 @@ struct ConvexPolygon
 public:
     static constexpr label_t n_triangles = NVerts - 2;  // Euler Formula
 
-    constexpr ConvexPolygon(std::array<Vector2, NVerts> const & vertices)
+    constexpr ConvexPolygon(std::array<Vector2, NVerts> vertices)
         : triangles{makeTriangles(vertices)}
+        , vertices{std::move(vertices)}
     {}
 
     std::array<Triangle2, n_triangles> const triangles;  // Euler Formula
+    std::array<Vector2, NVerts> const vertices;
 
 private:
 
@@ -40,58 +42,27 @@ private:
 };
 
 
-struct Square
-    : ConvexPolygon<4>
-{
-    //- Inherit constructors
-    using ConvexPolygon<4>::ConvexPolygon;
-
-    // Create square by its corner coordinates
-    constexpr Square(Vector2 lwr_left, Vector2 upr_right)
-        : ConvexPolygon<4>{antiClockWiseVertices(lwr_left, upr_right)}
-        {}
-
-private:
-
-    static constexpr std::array<Vector2, 4>
-    antiClockWiseVertices(Vector2 lwr_left, Vector2 upr_right)
-    {
-        Vector2 lwr_right{lwr_left + Vector2{upr_right[0] - lwr_left[0], 0}};
-        Vector2 upr_left{lwr_left  + Vector2{0, upr_right[1] - lwr_left[1]}};
-        return {lwr_left, lwr_right, upr_left, upr_right};
-    }
-};
-
-
 template<label_t NVerts>
-struct Circle
-    : public ConvexPolygon<NVerts>
+constexpr ConvexPolygon<NVerts> makeCircle(scalar_t const radius)
 {
-    constexpr Circle(scalar_t const r)
-        : ConvexPolygon<NVerts>{antiClockWiseVertices(r)}
-        , radius{r}
-        {}
+    scalar_t theta{0};
+    scalar_t const delta_theta{2*scalar_t(M_PI)/(NVerts)};
+    std::array<Vector2, NVerts> vertices;
 
-    scalar_t const radius;
-
-private:
-
-    static constexpr std::array<Vector2, NVerts>
-    antiClockWiseVertices(scalar_t const radius)
+    for (label_t v_id{0}; v_id != NVerts; ++v_id)
     {
-        scalar_t theta{0};
-        scalar_t const delta_theta{2*scalar_t(M_PI)/(NVerts)};
-        std::array<Vector2, NVerts> vertices;
-
-        for (label_t v_id{0}; v_id != NVerts; ++v_id)
-        {
-            vertices[v_id] = {radius * cos(theta), radius * sin(theta)};
-            theta += delta_theta;
-        }
-        return vertices;
+        vertices[v_id] = {radius * cos(theta), radius * sin(theta)};
+        theta += delta_theta;
     }
+    return ConvexPolygon<NVerts>(vertices);
+}
 
-};
+
+constexpr ConvexPolygon<4> makeSquare(Vector2 lwr_left, Vector2 upr_right)
+{
+    Vector2 const dx {upr_right[0] - lwr_left[0], 0};
+    return ConvexPolygon<4>{{lwr_left, lwr_left + dx, upr_right, upr_right - dx}};
+}
 
 
 #endif
