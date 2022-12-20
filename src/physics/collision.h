@@ -27,14 +27,14 @@ void rigidWallCollision
 );
 
 
-void boundaryCollision
+bool boundaryCollision
 (
     // - Boundary must be a convex polygon
     std::vector<Segment2> const & boundary_segments, TriangleGroup & g
 );
 
 
-void detectCollisions();
+void handleCollisions();
 
 }
 

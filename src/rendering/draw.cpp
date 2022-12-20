@@ -16,11 +16,7 @@ drawTriangleGroups() //(std::mutex & mtx)
     Physics & physics{Physics::getSingleton()};
     TrianglesManager & tri_manager{physics.tri_manager};
     
-    // std::unique_lock lck(mtx); 
-    // lck.lock();
-    //- Copying is faster rendering
-    std::vector<TriangleGroup> const groups {tri_manager.getTriangleGroups()};
-    // lck.unlock();
+    std::vector<TriangleGroup> const & groups {tri_manager.getTriangleGroups()};
 
     for (auto const & triangle_group : groups)
     {
@@ -73,11 +69,7 @@ render::
 drawBoundary() //(std::mutex & mtx)
 {
     BoundariesManager & boundaries {BoundariesManager::getSingleton()};
-    
-    // std::unique_lock lck(mtx);
-    // lck.lock();
-    std::vector<Segment2> const boundary {boundaries.getBoundary()};
-    // lck.unlock();
+    std::vector<Segment2> const & boundary {boundaries.getBoundary()};
 
     label_t const n_vertices{boundary.size() * 2};
     glBufferData

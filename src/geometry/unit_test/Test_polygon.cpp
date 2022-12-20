@@ -62,7 +62,7 @@ TEST(Polygon, Circle)
     }};
 
     //- Evaluate test function
-    static constexpr ConvexPolygon<4> circle{makePolygon<4>(radius)};
+    static constexpr ConvexPolygon<4> circle{makeCircle<4>(radius)};
 
     //- Assertions
     ASSERT_EQ(expected_triangles.size(), ConvexPolygon<4>::n_triangles);

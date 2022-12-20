@@ -1,9 +1,16 @@
 #include "collision.h"
 
-#include <math.h>
+#include "geometry/boundary_manager.h"
 #include "geometry/triangle_algo.h"
 #include "geometry/triangle_group.h"
+#include "geometry/triangles_manager.h"
 #include "geometry/coordinate_transformation.h"
+
+
+#include <math.h>
+#include <set>
+#include <iostream>
+
 
 namespace
 {
@@ -16,6 +23,9 @@ namespace
              relative_position[0]*rigid_body.angular_velocity + rigid_body.velocity[1]
         };
     }
+
+    static constexpr scalar_t elasticity = 1;
+
 }
 
 
@@ -25,7 +35,7 @@ Vector2 getNormalAtPt(TriangleGroup const & rigid_body, Vector2 const & rel_pt)
     Vector2 edge_direction;
     for (Segment2 const & s : rigid_body.getBoundary())
     {
-        scalar_t dst = algo::isPointOnASegment(s, rel_pt);
+        scalar_t dst = abs(algo::pointToSegmentDistance(s, rel_pt));
         if (dst < min_dst)
         {
             edge_direction = s[1] - s[0];
@@ -66,8 +76,7 @@ rigidBodyCollision
              - 2.0f*r[0]*r[1]*normal[0]*normal[1];
     };
 
-    constexpr scalar_t e = 1; // elasticity of the impact
-    scalar_t const numerator = -(1+e)*dot(normal, v_contact_2 - v_contact_1);
+    scalar_t const numerator = -(1+elasticity)*dot(normal, v_contact_2 - v_contact_1);
 
     scalar_t const denominator =
           1.0f/tri_1.area
@@ -100,12 +109,12 @@ rigidWallCollision
     scalar_t const v1_n {dot(velocity, inward_wall_normal)};
     if (v1_n < 0)
     {
-        velocity -= inward_wall_normal*(v1_n*2);
+        velocity -= elasticity*elasticity*inward_wall_normal*(v1_n*2);
     }
 }
 
 
-void
+bool
 algo::
 boundaryCollision(std::vector<Segment2> const & boundary_segments, TriangleGroup & g)
 {
@@ -118,7 +127,35 @@ boundaryCollision(std::vector<Segment2> const & boundary_segments, TriangleGroup
         {
             //- This is the segment to collide with
             rigidWallCollision(unitVector(inward_normal), g.velocity);
-            break;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+void 
+algo::
+handleCollisions()
+{
+    BoundariesManager & bdry_manager{BoundariesManager::getSingleton()};
+    TrianglesManager & tri_manager{TrianglesManager::getSingleton()};
+    std::vector<TriangleGroup> & tri_groups{tri_manager.getTriangleGroups()};
+
+    for(auto & group : tri_groups)
+    {
+        boundaryCollision(bdry_manager.getBoundary(), group);
+    }
+
+    for (auto & group : tri_groups)
+    {
+        for (auto & neighbour : tri_groups)
+        {
+            if (std::unique_ptr<Vector2> pt {algo::areOverlapping(group, neighbour)})
+            {
+                rigidBodyCollision(group, neighbour, *pt);
+                break;
+            }
         }
     }
 }

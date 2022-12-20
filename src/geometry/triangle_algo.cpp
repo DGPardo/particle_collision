@@ -62,12 +62,13 @@ areOverlapping(TriangleGroup const & group1, TriangleGroup const & group2)
 
 scalar_t
 algo::
-isPointOnASegment(Segment2 const & s, Vector2 const & pt)
+pointToSegmentDistance(Segment2 const & s, Vector2 const & pt)
 {
+    Vector2 const segment_direction{s[1] - s[0]};
+    Vector2 const outward_normal{segment_direction[1], -segment_direction[0]};
+
     Vector2 const rel{pt - s[0]};
-    Vector2 const bdry_plane{unitVector(s[1] - s[0])};
-    Vector2 const normal{rel - dot(rel, bdry_plane)*bdry_plane};
-    return magSqr(normal);
+    return dot(rel, outward_normal);
 }
 
 

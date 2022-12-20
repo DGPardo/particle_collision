@@ -40,9 +40,12 @@ advanceGroup(TriangleGroup & tri_group, scalar_t const dt) const
 {
     tri_group.position += tri_group.velocity * dt;
     tri_group.orientation += tri_group.angular_velocity*dt;
-    // TODO: Handle external forces
-    // tri_group.velocity += Physics::externalForces(tri_group) * dt;
-    // TODO: Handle orientation
+    
+    tri_group.velocity[1] -= 9.81*dt;  // Gravity
+
+    //- Modelling Air Friction
+    // tri_group.velocity -= unitVector(tri_group.velocity) *0.5*1.225*magSqr(tri_group.velocity)*0.001;
+    // tri_group.angular_velocity -= tri_group.angular_velocity/(abs(tri_group.angular_velocity) + TOL) *0.5*1.225*tri_group.angular_velocity*tri_group.angular_velocity*0.01;
 }
 
 
@@ -52,8 +55,8 @@ advance()
 {
     scalar_t const dt = timeSince(last_time);
     last_time = timeNow();
-    std::cout << "Time elapsed: " << timeSince(start_time) << "  FPS=" << (1.0/dt) << std::endl;
-
+    std::cout << "Time elapsed: " << timeSince(start_time) << "  FPS=" << 1.f/dt << std::endl;
+    
     std::vector<TriangleGroup> & tri_groups{tri_manager.getTriangleGroups()};
 
     scalar_t energy = 0;
@@ -84,32 +87,7 @@ advance()
     }
     std::cout << "energy: " << energy << "  lin: " << linMom << "  ang: " << angMom << std::endl;
 
-    std::vector<Segment2> const & bdry{BoundariesManager::getSingleton().getBoundary()};
-    for (TriangleGroup & tri_group : tri_groups)
-    {
-        algo::boundaryCollision(bdry, tri_group);  // if all inside, no collision will happen
-    }
-
-    if (tri_groups.size() <= 1) return;
-
-    // TODO: Use nearest-neighbours to optimize this code
-    for(label_t gid{0}; gid != tri_groups.size() - 1; ++gid)
-    {
-        for(label_t ngid{gid + 1}; ngid != tri_groups.size(); ++ngid)
-        {
-            std::unique_ptr<Vector2> pt {algo::areOverlapping(tri_groups[gid], tri_groups[ngid])};
-            if (pt)
-            {
-                algo::rigidBodyCollision
-                (
-                    tri_groups[gid],
-                    tri_groups[ngid],
-                    *pt
-                );
-                break;
-            }
-        }
-    }
+    algo::handleCollisions();
 }
 
 

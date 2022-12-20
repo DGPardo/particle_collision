@@ -48,7 +48,7 @@ conan_basic_setup()
 add_compile_definitions(scalar_t=float)
 
 # add_compile_definitions does not handle spaces
-set(LABEL_T_STR "unsigned long long int")
+set(LABEL_T_STR "size_t")
 add_compile_definitions(label_t=${LABEL_T_STR})
 
 

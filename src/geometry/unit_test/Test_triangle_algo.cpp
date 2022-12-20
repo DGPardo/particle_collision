@@ -61,7 +61,7 @@ TEST(TriangleAlgo, areaMomentOfCircle)
     constexpr label_t n_vertices{360*2};
     constexpr Vector2 origin{0, 0};
     constexpr scalar_t radius{10.5};
-    constexpr auto circle{makePolygon<n_vertices>(radius)};
+    constexpr auto circle{makeCircle<n_vertices>(radius)};
 
     constexpr scalar_t r4{radius*radius*radius*radius};
 

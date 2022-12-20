@@ -131,7 +131,7 @@ areOverlapping(TriangleGroup const & group1, TriangleGroup const & group2);
 //------------------------------------------------------------------------------
 
 scalar_t
-isPointOnASegment(Segment2 const & s, Vector2 const & pt);
+pointToSegmentDistance(Segment2 const & s, Vector2 const & pt);
 
 }
 

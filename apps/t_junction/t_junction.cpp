@@ -30,18 +30,28 @@ int main(void)
 {
     auto & tri_manager {TrianglesManager::getSingleton()};
 
-    constexpr auto circle{makeCircle<12>(0.02)};
+    constexpr Vector2 c1{-0.1, -0.02};
+    constexpr Vector2 c2{0.1, 0.02};
+    constexpr auto bar_h{makeRectangle(c1, c2)};
+    
+    constexpr Vector2 c3{-0.02, -0.1};
+    constexpr Vector2 c4{0.02, 0.1};
+    constexpr auto bar_v{makeRectangle(c3, c4)};
+    
+    tri_manager.addGroup
+    (
+        Vector2{0, 0},
+        Vector2{0, 0},
+        bar_h
+    );
 
-    for (label_t i{0}; i != 100; ++i)    
-    {
-        tri_manager.addGroup
-        (
-            randomVector(),
-            randomVector(),
-            circle
-        );
-    }
-
+    tri_manager.addGroup
+    (
+        Vector2{0, -0.3},
+        Vector2{0, 0.1},
+        bar_v
+    );
+    
     auto & bdry_manager {BoundariesManager::getSingleton()};
     constexpr auto domain{makeCircle<180>(1)};
     bdry_manager.setBoundary(domain);

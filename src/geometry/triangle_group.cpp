@@ -1,6 +1,7 @@
 #include "triangle_group.h"
 #include "coordinate_transformation.h"
 
+
 TriangleGroup::
 TriangleGroup
 (
@@ -13,6 +14,8 @@ TriangleGroup
   , angular_velocity{0}
   , area{0}
   , moment_of_inertia{0}
+  , influence_radius{0}
+  , ptr{std::make_unique<TriangleGroup *>(this)}
 {
   _triangles.reserve(3*100);  // Reserve for 100 triangles
   _boundary.reserve(100);
@@ -27,9 +30,13 @@ TriangleGroup(TriangleGroup&& other)
   , angular_velocity{std::move(other.angular_velocity)}
   , area{std::move(other.area)}
   , moment_of_inertia{std::move(other.moment_of_inertia)}
+  , influence_radius{std::move(other.influence_radius)}
+  , ptr{std::move(other.ptr)}
   , _triangles{std::move(other._triangles)}
   , _boundary{std::move(other._boundary)}
-{}
+{
+  *ptr = this;
+}
 
 
 void
@@ -38,7 +45,14 @@ addTriangle(Triangle2 coords)
 {
   area += algo::triangleArea(coords);
   moment_of_inertia += algo::triangleAreaMoment(coords, area, Vector2{0, 0});
+  
+  for (Vector2 const & coord : coords)
+  {
+    influence_radius = std::max(influence_radius, mag(coord));
+  }
+  
   _triangles.emplace_back(std::move(coords));
+
 }
 
 

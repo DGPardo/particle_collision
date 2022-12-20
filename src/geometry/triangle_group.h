@@ -23,7 +23,7 @@ public:
 
     // Do not allow empty constructor or copy constructor
     TriangleGroup() = delete;
-    TriangleGroup(TriangleGroup const & other) = default;
+    TriangleGroup(TriangleGroup const & other) = delete;
 
     //- member functions
     void addTriangle(Triangle2 coords);
@@ -44,6 +44,10 @@ public:
 
     scalar_t area;
     scalar_t moment_of_inertia;
+
+    scalar_t influence_radius;
+
+    std::unique_ptr<TriangleGroup *> ptr; // indirect access (move safe)
 
 private:
     std::vector<Triangle2> _triangles;  // this coordinates are relative to position

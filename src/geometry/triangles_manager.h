@@ -24,7 +24,7 @@ public:
     std::vector<TriangleGroup> & getTriangleGroups();
 
 private:
-    TrianglesManager() = default;
+    TrianglesManager() { _triangleGroups.reserve(100); } ;
     TrianglesManager(TrianglesManager const & other) = delete;
     TrianglesManager(TrianglesManager&& other) = delete;
     std::vector<TriangleGroup> _triangleGroups;
