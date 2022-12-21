@@ -41,7 +41,8 @@ advanceGroup(TriangleGroup & tri_group, scalar_t const dt) const
     tri_group.position += tri_group.velocity * dt;
     tri_group.orientation += tri_group.angular_velocity*dt;
     
-    tri_group.velocity[1] -= 9.81*dt;  // Gravity
+    // gravity
+    // tri_group.velocity[1] -= 9.81*dt;
 
     //- Modelling Air Friction
     // tri_group.velocity -= unitVector(tri_group.velocity) *0.5*1.225*magSqr(tri_group.velocity)*0.001;

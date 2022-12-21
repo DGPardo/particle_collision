@@ -52,10 +52,6 @@ int main(void)
         bar_v
     );
     
-    auto & bdry_manager {BoundariesManager::getSingleton()};
-    constexpr auto domain{makeCircle<180>(1)};
-    bdry_manager.setBoundary(domain);
-
     GLFWwindow * const window{render::glInitialize()};
     render::run(window);
 }

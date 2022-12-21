@@ -32,7 +32,7 @@ int main(void)
 
     constexpr auto circle{makeCircle<12>(0.02)};
 
-    for (label_t i{0}; i != 100; ++i)    
+    for (label_t i{0}; i != 20; ++i)    
     {
         tri_manager.addGroup
         (
