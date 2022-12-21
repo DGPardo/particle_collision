@@ -33,11 +33,11 @@ int main(void)
     constexpr Vector2 c1{-0.1, -0.02};
     constexpr Vector2 c2{0.1, 0.02};
     constexpr auto bar_h{Rectangle(c1, c2)};
-    
+
     constexpr Vector2 c3{-0.05, -0.05};
     constexpr Vector2 c4{0.05, 0.05};
     constexpr auto bar_v{Rectangle(c3, c4)};
-    
+
     tri_manager.addGroup
     (
         Vector2{0, 0},
@@ -57,7 +57,7 @@ int main(void)
     tri_manager.addGroup
     (
         Vector2{0.05, 0.3},
-        Vector2{0, 3},
+        Vector2{0, 0.3},
         circle
     );
 

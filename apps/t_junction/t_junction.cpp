@@ -80,9 +80,6 @@ int main(void)
         bar_v
     );
 
-
-    std::cout << "addrs: " << &(tri_manager.getTriangleGroups().back()) << std::endl;
-
     tri_manager.addGroup
     (
         Vector2{-0.4, 0.2},
@@ -91,7 +88,7 @@ int main(void)
     );
 
     auto & bdry_manager {BoundariesManager::getSingleton()};
-    constexpr auto domain{makeCircle<180>(1)};
+    constexpr auto domain{makeCircle<90>(1)};
     bdry_manager.setBoundary(domain);
 
     GLFWwindow * const window{render::glInitialize()};

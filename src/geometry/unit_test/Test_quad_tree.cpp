@@ -40,24 +40,22 @@ TEST(QuadTree, InsertionSubdivide)
 
     void* data{nullptr};
 
-    constexpr Vector2 point_cloud[5] =
+    constexpr Vector2 point_cloud[7] =
     {
         {0.1, 0.1},
         {0.2, 0.2},
         {0.3, 0.3},
         {0.4, 0.4},
-        {0.5, 0.5}
+        {0.5, 0.5},
+        {0.6, 0.6},
+        {0.7, 0.7},
     };
 
-    qt.insert(QuadTreeNode::make(point_cloud[0], data));
-    qt.insert(QuadTreeNode::make(point_cloud[1], data));
-    qt.insert(QuadTreeNode::make(point_cloud[2], data));
-    qt.insert(QuadTreeNode::make(point_cloud[3], data));
-    qt.insert(QuadTreeNode::make(point_cloud[4], data));  //- Past capacity -> subdivide
-
+    for (label_t i{0}; i != 7; ++i)
     {
-        auto const found {qt.query(Rectangle(Vector2{0, 0}, Vector2{1, 1}))};
-        ASSERT_EQ(found.size(), label_t(5));
+        qt.insert(QuadTreeNode::make(point_cloud[i], data));
     }
 
+    auto const found {qt.query(Rectangle(Vector2{0, 0}, Vector2{1, 1}))};
+    ASSERT_EQ(found.size(), label_t(7));
 }

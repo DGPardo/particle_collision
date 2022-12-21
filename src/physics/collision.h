@@ -16,12 +16,11 @@ namespace algo
 void rigidBodyCollision
 (
     TriangleGroup & tri_1,
-    TriangleGroup & tri_2,
-    Vector2 const & contact_pt
+    TriangleGroup & tri_2
 );
 
 
-void rigidWallCollision
+bool rigidWallCollision
 (
     Vector2 const & inward_wall_normal, Vector2 & velocity
 );
@@ -30,7 +29,7 @@ void rigidWallCollision
 bool boundaryCollision
 (
     // - Boundary must be a convex polygon
-    std::vector<Segment2> const & boundary_segments, TriangleGroup & g
+    TriangleGroup & group
 );
 
 

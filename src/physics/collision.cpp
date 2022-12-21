@@ -24,25 +24,68 @@ namespace
         };
     }
 
-    static constexpr scalar_t elasticity = 1;
+    static constexpr scalar_t elasticity = 1.0;
 
 }
 
 
-Vector2 getNormalAtPt(TriangleGroup const & rigid_body, Vector2 const & rel_pt)
+Vector2 getNormalAtPt(TriangleGroup & g1, TriangleGroup & g2, Vector2 & contact_pt)
 {
-    scalar_t min_dst{1};
-    Vector2 edge_direction;
-    for (Segment2 const & s : rigid_body.getBoundary())
+    scalar_t dt = 1E-2;
+    std::unique_ptr<Vector2> pt;
+
+    Vector2 const p1{g1.position};
+    Vector2 const p2{g2.position};
+
+    scalar_t const a1{g1.orientation};
+    scalar_t const a2{g2.orientation};
+
+    bool early{true}, late{true};
+    while (dt > 1E-4 || early || late)
     {
-        scalar_t dst = abs(algo::pointToSegmentDistance(s, rel_pt));
-        if (dst < min_dst)
+        if (auto pt = algo::areOverlapping(g1, g2))
         {
-            edge_direction = s[1] - s[0];
-            min_dst = dst;
+            late = false;
+            contact_pt = *pt;
+            dt *= 1.5;
+            g1.position -= g1.velocity*dt;
+            g1.orientation -= g1.angular_velocity*dt;
+
+            g2.position -= g2.velocity*dt;
+            g2.orientation -= g2.angular_velocity*dt;
+        }
+        else
+        {
+            early = false;
+            dt /= 3;
+            g1.position += g1.velocity*dt;
+            g1.orientation += g1.angular_velocity*dt;
+
+            g2.position += g2.velocity*dt;
+            g2.orientation += g2.angular_velocity*dt;
         }
     }
-    return unitVector(Vector2{-edge_direction[1], edge_direction[0]});
+
+    g1.position = p1;
+    g2.position = p2;
+
+    g1.orientation = a1;
+    g2.orientation = a2;
+
+    scalar_t min_dst{SCALAR_MAX};
+    Vector2 segment_direction;
+    for (auto const & s : g1.getAbsBoundary())
+    {
+        scalar_t dst {abs(algo::pointToSegmentDistance(s, contact_pt))};
+        if (dst < min_dst)
+        {
+            // orientation assumed counter clockwise
+            segment_direction = s[1] - s[0];
+            std::swap(min_dst, dst);
+        }
+    }
+    Vector2 const outward_normal{segment_direction[1], -segment_direction[0]};
+    return unitVector(outward_normal);
 }
 
 
@@ -51,14 +94,26 @@ algo::
 rigidBodyCollision
 (
     TriangleGroup & tri_1,
-    TriangleGroup & tri_2,
-    Vector2 const & contact_pt
+    TriangleGroup & tri_2
 )
 {
+    Vector2 const system_momentum
+    {
+          tri_1.velocity*tri_1.area
+        + tri_2.velocity*tri_2.area
+    };
+    scalar_t const system_angular_momentum
+    {
+          tri_1.angular_velocity*tri_1.moment_of_inertia
+        + tri_2.angular_velocity*tri_2.moment_of_inertia
+    };
     /*
     Impulse-based reaction model
     https://en.wikipedia.org/wiki/Collision_response#Impulse-based_contact_model
     */
+
+    Vector2 contact_pt;
+    Vector2 const normal{getNormalAtPt(tri_1, tri_2, contact_pt)};  // outward normal of tri_1
 
     // Relative velocity at contact pt
     Vector2 rel_pos_1 {algo::toRelative(tri_1, contact_pt)};
@@ -66,7 +121,6 @@ rigidBodyCollision
 
     Vector2 const v_contact_1{velocityOfPointOnRigidBody(tri_1, rel_pos_1)};
     Vector2 const v_contact_2{velocityOfPointOnRigidBody(tri_2, rel_pos_2)};
-    Vector2 const normal{getNormalAtPt(tri_1, rel_pos_1)};
 
     auto helper = [&normal](Vector2 const & r) -> scalar_t
     {
@@ -76,7 +130,11 @@ rigidBodyCollision
              - 2.0f*r[0]*r[1]*normal[0]*normal[1];
     };
 
-    scalar_t const numerator = -(1+elasticity)*dot(normal, v_contact_2 - v_contact_1);
+    auto const vrel{dot(normal, v_contact_2 - v_contact_1)};
+
+    if (vrel > 0) return;
+
+    scalar_t const numerator = -(1+elasticity)*vrel;
 
     scalar_t const denominator =
           1.0f/tri_1.area
@@ -84,7 +142,12 @@ rigidBodyCollision
         + helper(rel_pos_1) / tri_1.moment_of_inertia
         + helper(rel_pos_2) / tri_2.moment_of_inertia;
 
-    constexpr scalar_t delta[2] = {-std::numeric_limits<scalar_t>::epsilon(), std::numeric_limits<scalar_t>::epsilon()};
+    static constexpr scalar_t delta[2] =
+    {
+        -std::numeric_limits<scalar_t>::epsilon(),
+         std::numeric_limits<scalar_t>::epsilon()
+    };
+
     scalar_t const impulse_magnitude
     {
         numerator / (denominator + delta[denominator > 0])
@@ -92,14 +155,14 @@ rigidBodyCollision
 
     Vector2 const impulse{impulse_magnitude * normal};
     tri_1.velocity -= impulse / tri_1.area;
-    tri_2.velocity += impulse / tri_2.area;
+    tri_2.velocity = (system_momentum - tri_1.velocity*tri_1.area)/tri_2.area;
 
     tri_1.angular_velocity -= impulse_magnitude/tri_1.moment_of_inertia*(rel_pos_1[0]*normal[1] - normal[0]*rel_pos_1[1]);
-    tri_2.angular_velocity += impulse_magnitude/tri_2.moment_of_inertia*(rel_pos_2[0]*normal[1] - normal[0]*rel_pos_2[1]);
+    tri_2.angular_velocity = (system_angular_momentum - tri_1.angular_velocity*tri_1.moment_of_inertia) / tri_2.moment_of_inertia;
 }
 
 
-void
+bool
 algo::
 rigidWallCollision
 (
@@ -109,25 +172,30 @@ rigidWallCollision
     scalar_t const v1_n {dot(velocity, inward_wall_normal)};
     if (v1_n < 0)
     {
-        velocity -= elasticity*elasticity*inward_wall_normal*(v1_n*2);
+        velocity -= elasticity*inward_wall_normal*(v1_n*2);
+        return true;
     }
+    return false;
 }
 
 
 bool
 algo::
-boundaryCollision(std::vector<Segment2> const & boundary_segments, TriangleGroup & g)
+boundaryCollision(TriangleGroup & group)
 {
-    for (Segment2 const & boundary : boundary_segments)
+    static BoundariesManager & bdry_manager{BoundariesManager::getSingleton()};
+    for (Segment2 const & boundary : bdry_manager.getBoundary())
     {
         Vector2 const segment_direction{boundary[1] - boundary[0]};
         Vector2 const inward_normal{-segment_direction[1], segment_direction[0]};
 
-        if ( dot(g.position - boundary[0], inward_normal) < 0 )  // This test is only valid if boundary_segments form a convex polygon!!!
+        if ( dot(group.position - boundary[0], inward_normal) < 0 )  // This test is only valid if boundary_segments form a convex polygon!!!
         {
             //- This is the segment to collide with
-            rigidWallCollision(unitVector(inward_normal), g.velocity);
-            return true;
+            if (rigidWallCollision(unitVector(inward_normal), group.velocity))
+            {
+                return true;
+            }
         }
     }
     return false;
@@ -138,13 +206,13 @@ void
 algo::
 handleCollisions()
 {
-    BoundariesManager & bdry_manager{BoundariesManager::getSingleton()};
-    TrianglesManager & tri_manager{TrianglesManager::getSingleton()};
+    static BoundariesManager & bdry_manager {BoundariesManager::getSingleton()};
+    static TrianglesManager & tri_manager{TrianglesManager::getSingleton()};
     std::vector<TriangleGroup> & tri_groups{tri_manager.getTriangleGroups()};
 
     for(auto & group : tri_groups)
     {
-        boundaryCollision(bdry_manager.getBoundary(), group);
+        boundaryCollision(group);
     }
 
     QuadTree qt{bdry_manager.getBoundingBox()};
@@ -153,16 +221,40 @@ handleCollisions()
         qt.insert(QuadTreeNode::make(group.position, group.ptr.get()));
     }
 
+    // for (label_t i=0; i < tri_groups.size() - 1; ++i)
+    // {
+    //     for (label_t j=i+1; j < tri_groups.size(); ++j)
+    //     {
+    //         if (auto pt = algo::areOverlapping(tri_groups[i], tri_groups[j]))
+    //         {
+    //             rigidBodyCollision(tri_groups[i], tri_groups[j]);
+    //             break;
+    //         }
+    //     }
+    // }
+
+    std::set<TriangleGroup const *> collided;
     for (auto & group : tri_groups)
     {
+        if (collided.find(&group) != collided.end()) continue;
+
         auto found_groups {qt.query(algo::getBoundingBox(group, group.influence_radius))};
         for (auto & neighbour_node : found_groups)
         {
             TriangleGroup ** neighbour {static_cast<TriangleGroup**>(neighbour_node.data)};
-
-            if (std::unique_ptr<Vector2> pt {algo::areOverlapping(group, **neighbour)})
+            if (&group == *neighbour) [[unlikely]]
             {
-                rigidBodyCollision(group, **neighbour, *pt);
+                continue;
+            }
+            else if(collided.find(*neighbour) != collided.end())
+            {
+                continue;
+            }
+            else if (auto pt = algo::areOverlapping(group, **neighbour))
+            {
+                rigidBodyCollision(group, **neighbour);
+                collided.insert(&group);
+                collided.insert(*neighbour);
                 break;
             }
         }

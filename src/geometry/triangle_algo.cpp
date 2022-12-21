@@ -1,5 +1,6 @@
 #include "triangle_algo.h"
 
+#include "bounding_box.h"
 #include "polygon.h"
 #include "triangle_group.h"
 #include "math/integrate.h"
@@ -16,9 +17,9 @@ isPointInsideTriangle(Triangle2 const & tri_1, Vector2 const & pt)
     bool const isInside
     {
         // if all barycentric coordinates 0 < c < 1 then it is inside
-           (coords[0] > scalar_t(0)) && (coords[0] < scalar_t(1))
-        && (coords[1] > scalar_t(0)) && (coords[1] < scalar_t(1))
-        && (coords[2] > scalar_t(0)) && (coords[2] < scalar_t(1))
+           (coords[0] > scalar_t(0.f)) && (coords[0] < scalar_t(1.f))
+        && (coords[1] > scalar_t(0.f)) && (coords[1] < scalar_t(1.f))
+        && (coords[2] > scalar_t(0.f)) && (coords[2] < scalar_t(1.f))
     };
     return isInside;
 }
@@ -43,16 +44,28 @@ std::unique_ptr<Vector2>
 algo::
 areOverlapping(TriangleGroup const & group1, TriangleGroup const & group2)
 {
-    std::vector<Triangle2> triangles_1 {group1.getAbsTriangles()};
-    std::vector<Triangle2> triangles_2 {group2.getAbsTriangles()};
-    for (Triangle2 const & triangle_1 : triangles_1)
+    if (!algo::getBoundingBox(group1).overlaps(algo::getBoundingBox(group2)))
     {
-        for (Triangle2 const & triangle_2 : triangles_2)
+        return nullptr;
+    }
+
+    //- Brute force
+    auto const segments1 = group1.getAbsBoundary();
+    auto const segments2 = group2.getAbsBoundary();
+
+    for (Segment2 const & s1 : segments1)
+    {
+        Vector2 const dir{s1[1] - s1[0]};
+        Vector2 const outward_normal{dir[1], -dir[0]};
+        for(Segment2 const & s2 : segments2)
         {
-            std::unique_ptr<Vector2> pt {isOverlapping(triangle_1, triangle_2)};
-            if (pt)
+            if (dot(s2[0] - s1[0], outward_normal) < 0)
             {
-                return pt;
+                return std::make_unique<Vector2>(s2[0]);
+            }
+            else if (dot(s2[1] - s1[0], outward_normal) < 0)
+            {
+                return std::make_unique<Vector2>(s2[1]);
             }
         }
     }
@@ -66,9 +79,7 @@ pointToSegmentDistance(Segment2 const & s, Vector2 const & pt)
 {
     Vector2 const segment_direction{s[1] - s[0]};
     Vector2 const outward_normal{segment_direction[1], -segment_direction[0]};
-
-    Vector2 const rel{pt - s[0]};
-    return dot(rel, outward_normal);
+    return dot(pt - s[0], outward_normal);
 }
 
 
@@ -76,9 +87,12 @@ bool
 algo::
 isPointInsidePolygon(TriangleGroup const & g, Vector2 const & pt)
 {
-    for (auto const & t : g.getTriangles())
+    for (Segment2 const & s : g.getAbsBoundary())
     {
-        if (isPointInsideTriangle(t, pt)) return true;
+        if (pointToSegmentDistance(s, pt) < 0)
+        {
+            return true;
+        }
     }
     return false;
 }

@@ -128,24 +128,32 @@ TEST(Rectangle, Overlaps)
 
     {
         //- exact overlap
-        Vector2 min{0,0};
-        Vector2 max{1,1};
+        Vector2 min{0, 0};
+        Vector2 max{1, 1};
         Rectangle other(min, max);
         ASSERT_TRUE(reference.overlaps(other));
         ASSERT_TRUE(other.overlaps(reference));
     }
     {
         //- Completely outside
-        Vector2 min{2,2};
-        Vector2 max{3,5};
+        Vector2 min{2, 2};
+        Vector2 max{3, 5};
         Rectangle other(min, max);
         ASSERT_FALSE(reference.overlaps(other));
         ASSERT_FALSE(other.overlaps(reference));
     }
     {
         //- Partially overlapping
-        Vector2 min{0.5,0.5};
-        Vector2 max{2,2};
+        Vector2 min{0.5, 0.5};
+        Vector2 max{2, 2};
+        Rectangle other(min, max);
+        ASSERT_TRUE(reference.overlaps(other));
+        ASSERT_TRUE(other.overlaps(reference));
+    }
+    {
+        //- fully contained
+        Vector2 min{0.1, 0.1};
+        Vector2 max{0.9, 0.9};
         Rectangle other(min, max);
         ASSERT_TRUE(reference.overlaps(other));
         ASSERT_TRUE(other.overlaps(reference));

@@ -19,7 +19,7 @@ QuadTree(Rectangle boundary, label_t capacity)
 
 bool
 QuadTree::
-insert(QuadTreeNode node)
+insert(QuadTreeNode const & node)
 {
     if (!_boundary.contains(node.position))
     {
@@ -31,8 +31,10 @@ insert(QuadTreeNode node)
         _points.push_back(node);
         return true;
     }
-
-    subdivide();
+    else if (!_is_subdivided)
+    {
+        subdivide();
+    }
 
     if (_north_east->insert(node)) return true;
     if (_north_west->insert(node)) return true;
@@ -64,17 +66,10 @@ query(Rectangle const & lookup_region) const
 
     if (_is_subdivided)
     {
-        auto pts = _north_east->query(lookup_region);
-        append(pts);
-
-        pts = _north_west->query(lookup_region);
-        append(pts);
-
-        pts = _south_west->query(lookup_region);
-        append(pts);
-
-        pts = _south_east->query(lookup_region);
-        append(pts);
+        append(_north_east->query(lookup_region));
+        append(_north_west->query(lookup_region));
+        append(_south_west->query(lookup_region));
+        append(_south_east->query(lookup_region));
     }
 
     return found_pts;

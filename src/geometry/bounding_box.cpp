@@ -5,10 +5,7 @@ Rectangle
 algo::
 getBoundingBox(TriangleGroup const & group, scalar_t offset)
 {
-    Vector2 const diagonal{group.influence_radius + offset, group.influence_radius + offset};
-    auto min{group.position - diagonal};
-    auto max{group.position + diagonal};
-    return Rectangle(std::move(min), std::move(max));
+    return getBoundingBox(group.getAbsBoundary(), offset);
 }
 
 
@@ -16,7 +13,7 @@ Rectangle
 algo::
 getBoundingBox(std::vector<Segment2> const & boundary, scalar_t offset)
 {
-    scalar_t xmin, xmax, ymin, ymax;
+    scalar_t xmin{SCALAR_MAX}, xmax{SCALAR_MIN}, ymin{SCALAR_MAX}, ymax{SCALAR_MIN};
     for (Segment2 const & s : boundary)
     {
         for (Vector2 const coord : s)

@@ -4,16 +4,17 @@
 #include "polygon.h"
 #include "triangle_group.h"
 
+#include <limits>
+
 
 namespace algo
 {
-
 
 template<label_t N>
 Rectangle
 getBoundingBox(ConvexPolygon<N> const & polygon, /*unsigned*/ scalar_t offset=0)
 {
-    scalar_t xmin, xmax, ymin, ymax;
+    scalar_t xmin{SCALAR_MAX}, xmax{SCALAR_MIN}, ymin{SCALAR_MAX}, ymax{SCALAR_MIN};
     for (Vector2 const & coord : polygon.vertices)
     {
         if      (coord[0] < xmin) { xmin = coord[0]; }

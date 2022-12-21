@@ -30,9 +30,9 @@ int main(void)
 {
     auto & tri_manager {TrianglesManager::getSingleton()};
 
-    constexpr auto circle{makeCircle<13>(0.02)};
+    constexpr auto circle{makeCircle<10>(0.02)};
 
-    for (label_t i{0}; i != 60; ++i)    
+    for (label_t i{0}; i != 30; ++i)
     {
         tri_manager.addGroup
         (
@@ -42,8 +42,11 @@ int main(void)
         );
     }
 
+    constexpr Vector2 ll{-0.8, -0.8};
+    constexpr Vector2 ur{0.8, 0.8};
+    constexpr auto domain{Rectangle(ll, ur)};
+
     auto & bdry_manager {BoundariesManager::getSingleton()};
-    constexpr auto domain{makeCircle<180>(1)};
     bdry_manager.setBoundary(domain);
 
     GLFWwindow * const window{render::glInitialize()};
