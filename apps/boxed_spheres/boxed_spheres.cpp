@@ -30,9 +30,9 @@ int main(void)
 {
     auto & tri_manager {TrianglesManager::getSingleton()};
 
-    constexpr auto circle{makeCircle<12>(0.02)};
+    constexpr auto circle{makeCircle<13>(0.02)};
 
-    for (label_t i{0}; i != 20; ++i)    
+    for (label_t i{0}; i != 60; ++i)    
     {
         tri_manager.addGroup
         (

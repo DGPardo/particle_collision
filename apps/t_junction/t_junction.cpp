@@ -32,12 +32,12 @@ int main(void)
 
     constexpr Vector2 c1{-0.1, -0.02};
     constexpr Vector2 c2{0.1, 0.02};
-    constexpr auto bar_h{makeRectangle(c1, c2)};
-    
+    constexpr auto bar_h{Rectangle(c1, c2)};
+
     constexpr Vector2 c3{-0.02, -0.1};
     constexpr Vector2 c4{0.02, 0.1};
-    constexpr auto bar_v{makeRectangle(c3, c4)};
-    
+    constexpr auto bar_v{Rectangle(c3, c4)};
+
     tri_manager.addGroup
     (
         Vector2{0, 0},
@@ -51,7 +51,49 @@ int main(void)
         Vector2{0, 0.1},
         bar_v
     );
-    
+
+    tri_manager.addGroup
+    (
+        Vector2{0.4, 0},
+        Vector2{0, 0},
+        bar_h
+    );
+
+    tri_manager.addGroup
+    (
+        Vector2{0.4, -0.3},
+        Vector2{0, 0.1},
+        bar_v
+    );
+
+    tri_manager.addGroup
+    (
+        Vector2{-0.4, 0},
+        Vector2{0, 0},
+        bar_h
+    );
+
+    tri_manager.addGroup
+    (
+        Vector2{-0.4, -0.3},
+        Vector2{0, 0.1},
+        bar_v
+    );
+
+
+    std::cout << "addrs: " << &(tri_manager.getTriangleGroups().back()) << std::endl;
+
+    tri_manager.addGroup
+    (
+        Vector2{-0.4, 0.2},
+        Vector2{0.2, 0.2},
+        bar_h
+    );
+
+    auto & bdry_manager {BoundariesManager::getSingleton()};
+    constexpr auto domain{makeCircle<180>(1)};
+    bdry_manager.setBoundary(domain);
+
     GLFWwindow * const window{render::glInitialize()};
     render::run(window);
 }

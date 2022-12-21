@@ -1,11 +1,11 @@
 #include "collision.h"
 
 #include "geometry/boundary_manager.h"
+#include "geometry/coordinate_transformation.h"
 #include "geometry/triangle_algo.h"
 #include "geometry/triangle_group.h"
 #include "geometry/triangles_manager.h"
-#include "geometry/coordinate_transformation.h"
-
+#include "geometry/quad_tree.h"
 
 #include <math.h>
 #include <set>
@@ -134,7 +134,7 @@ boundaryCollision(std::vector<Segment2> const & boundary_segments, TriangleGroup
 }
 
 
-void 
+void
 algo::
 handleCollisions()
 {
@@ -147,13 +147,22 @@ handleCollisions()
         boundaryCollision(bdry_manager.getBoundary(), group);
     }
 
+    QuadTree qt{bdry_manager.getBoundingBox()};
     for (auto & group : tri_groups)
     {
-        for (auto & neighbour : tri_groups)
+        qt.insert(QuadTreeNode::make(group.position, group.ptr.get()));
+    }
+
+    for (auto & group : tri_groups)
+    {
+        auto found_groups {qt.query(algo::getBoundingBox(group, group.influence_radius))};
+        for (auto & neighbour_node : found_groups)
         {
-            if (std::unique_ptr<Vector2> pt {algo::areOverlapping(group, neighbour)})
+            TriangleGroup ** neighbour {static_cast<TriangleGroup**>(neighbour_node.data)};
+
+            if (std::unique_ptr<Vector2> pt {algo::areOverlapping(group, **neighbour)})
             {
-                rigidBodyCollision(group, neighbour, *pt);
+                rigidBodyCollision(group, **neighbour, *pt);
                 break;
             }
         }

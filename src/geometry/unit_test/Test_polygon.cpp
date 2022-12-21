@@ -80,3 +80,77 @@ TEST(Polygon, Circle)
         }
     }
 }
+
+
+TEST(Rectangle, Contains)
+{
+    //- setup
+    static constexpr Vector2 south_west{0,0};
+    static constexpr Vector2 north_east{1,1};
+    Rectangle rect(south_west, north_east);
+
+    //- test points
+    static constexpr Vector2 inside_pt{0.5, 0.5};
+    static constexpr Vector2 outside_pt{2, 2};
+
+    ASSERT_TRUE (rect.contains(inside_pt));
+    ASSERT_FALSE(rect.contains(outside_pt));
+}
+
+
+TEST(Rectangle, ContainsEdgeTesting)
+{
+    //- setup
+    static constexpr Vector2 south_west{0,0};
+    static constexpr Vector2 north_east{1,1};
+    Rectangle rect(south_west, north_east);
+
+    //- test points
+    static constexpr Vector2 edge_1{0, 0.5};
+    static constexpr Vector2 edge_2{1, 0.5};
+    static constexpr Vector2 edge_3{0.5, 0};
+    static constexpr Vector2 edge_4{0.5, 1};
+
+    ASSERT_FALSE (rect.contains(edge_1));
+    ASSERT_FALSE (rect.contains(edge_3));
+
+    ASSERT_TRUE(rect.contains(edge_2));
+    ASSERT_TRUE(rect.contains(edge_4));
+}
+
+
+TEST(Rectangle, Overlaps)
+{
+    //- setup
+    static constexpr Vector2 south_west{0,0};
+    static constexpr Vector2 north_east{1,1};
+    static constexpr Rectangle reference(south_west, north_east);
+
+    {
+        //- exact overlap
+        Vector2 min{0,0};
+        Vector2 max{1,1};
+        Rectangle other(min, max);
+        ASSERT_TRUE(reference.overlaps(other));
+        ASSERT_TRUE(other.overlaps(reference));
+    }
+    {
+        //- Completely outside
+        Vector2 min{2,2};
+        Vector2 max{3,5};
+        Rectangle other(min, max);
+        ASSERT_FALSE(reference.overlaps(other));
+        ASSERT_FALSE(other.overlaps(reference));
+    }
+    {
+        //- Partially overlapping
+        Vector2 min{0.5,0.5};
+        Vector2 max{2,2};
+        Rectangle other(min, max);
+        ASSERT_TRUE(reference.overlaps(other));
+        ASSERT_TRUE(other.overlaps(reference));
+    }
+}
+
+
+

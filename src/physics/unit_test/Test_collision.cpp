@@ -66,7 +66,7 @@ TEST(Collision, boundaryWallCollisionRectangle)
     
     constexpr Vector2 ll{-1, -1};
     constexpr Vector2 ur{1, 1};
-    constexpr auto domain{makeRectangle(ll, ur)};
+    constexpr auto domain{Rectangle(ll, ur)};
 
     bdry_manager.setBoundary(domain);
 

@@ -18,6 +18,14 @@ getBoundary() const
 }
 
 
+Rectangle const &
+BoundariesManager::
+getBoundingBox() const
+{
+    return *_bbox;
+}
+
+
 TriangleGroup const &
 BoundariesManager::
 getDomain() const

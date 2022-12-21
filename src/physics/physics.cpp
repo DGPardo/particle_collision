@@ -40,7 +40,7 @@ advanceGroup(TriangleGroup & tri_group, scalar_t const dt) const
 {
     tri_group.position += tri_group.velocity * dt;
     tri_group.orientation += tri_group.angular_velocity*dt;
-    
+
     // gravity
     // tri_group.velocity[1] -= 9.81*dt;
 
@@ -57,13 +57,13 @@ advance()
     scalar_t const dt = timeSince(last_time);
     last_time = timeNow();
     std::cout << "Time elapsed: " << timeSince(start_time) << "  FPS=" << 1.f/dt << std::endl;
-    
+
     std::vector<TriangleGroup> & tri_groups{tri_manager.getTriangleGroups()};
 
     scalar_t energy = 0;
     scalar_t linMom = 0;
     scalar_t angMom = 0;
-    
+
     auto computeEnergy = [](TriangleGroup const & g) -> scalar_t
     {
         return 0.5*(g.area*magSqr(g.velocity)) + 0.5*g.moment_of_inertia*g.angular_velocity*g.angular_velocity;

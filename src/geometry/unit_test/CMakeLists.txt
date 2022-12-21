@@ -40,4 +40,20 @@ target_include_directories(
 )
 
 add_test(NAME TestCoordTransformation
-        COMMAND TestCoordTransformation)
+         COMMAND TestCoordTransformation)
+
+
+################################################################################
+
+
+add_executable(TestQuadTree Test_quad_tree.cpp)
+
+target_link_libraries(TestQuadTree ${CONAN_LIBS} PhysxLib)
+target_include_directories(
+    TestQuadTree PRIVATE
+    ${CONAN_INCLUDE_DIRS}
+    ${PROJECT_SOURCE_DIR}/src/
+)
+
+add_test(NAME TestQuadTree
+         COMMAND TestQuadTree)
