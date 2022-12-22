@@ -2,12 +2,12 @@
 
 #include "draw.h"
 #include "physics/physics.h"
+#include "rendering/parallel_utils.h"
 
 #include <chrono>
 #include <exception>
-
-#include <thread>
 #include <mutex>
+#include <thread>
 
 
 GLFWwindow *
@@ -56,19 +56,30 @@ run(GLFWwindow * const window)
 {
     Physics & physics{Physics::getSingleton()};
 
+    auto continuousUpdate =[&](std::stop_token stoken)
+    {
+        while (!stoken.stop_requested())
+        {
+            std::lock_guard<std::mutex> lck(render::mtx);
+            physics.advance();
+        }
+    };
+    std::jthread phyx{continuousUpdate};
+
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
 
-        render::drawTriangleGroups();
-        render::drawBoundary();
         render::drawQuadTree();
+        render::drawBoundary();
+        render::drawTriangleGroups();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-
-        //- Update Physics
-        physics.advance();
     }
     glfwTerminate();
+
+    phyx.request_stop();
+    phyx.join();
+
 }

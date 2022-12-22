@@ -29,9 +29,9 @@ scalar_t randomScalar()
 int main(void)
 {
     auto & tri_manager {TrianglesManager::getSingleton()};
-    for (int i{0}; i < 24; ++i)
+    for (int i{0}; i < 50; ++i)
     {
-        auto circle = makeCircle<12>(std::max(0.02, 0.05*abs(randomScalar())));
+        auto circle = makeCircle<12>(std::max(0.01, 0.05*abs(randomScalar())));
         tri_manager.addGroup
         (
             randomVector(),
