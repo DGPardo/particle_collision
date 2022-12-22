@@ -45,12 +45,12 @@ addTriangle(Triangle2 coords)
 {
   area += algo::triangleArea(coords);
   moment_of_inertia += algo::triangleAreaMoment(coords, area, Vector2{0, 0});
-  
+
   for (Vector2 const & coord : coords)
   {
     influence_radius = std::max(influence_radius, mag(coord));
   }
-  
+
   _triangles.emplace_back(std::move(coords));
 
 }
@@ -79,12 +79,25 @@ getAbsTriangles() const
   std::vector<Triangle2> triangles{_triangles};
   for (auto & triangle : triangles)
   {
-    for (auto & vertex : triangle)
-    {
-      vertex = algo::toAbsolute(*this, vertex);
-    }
+    triangle[0] = algo::toAbsolute(*this, triangle[0]);
+    triangle[1] = algo::toAbsolute(*this, triangle[1]);
+    triangle[2] = algo::toAbsolute(*this, triangle[2]);
   }
   return triangles;
+}
+
+
+std::vector<Segment2>
+TriangleGroup::
+getAbsBoundary() const
+{
+  std::vector<Segment2> segment2{_boundary};
+  for (auto & s : segment2)
+  {
+    s[0] = algo::toAbsolute(*this, s[0]);
+    s[1] = algo::toAbsolute(*this, s[1]);
+  }
+  return segment2;
 }
 
 

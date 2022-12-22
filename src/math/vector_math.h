@@ -11,6 +11,10 @@
 #define TOL (std::numeric_limits<scalar_t>::epsilon()*100)
 
 
+static constexpr scalar_t SCALAR_MAX {std::numeric_limits<scalar_t>::max()};
+static constexpr scalar_t SCALAR_MIN {std::numeric_limits<scalar_t>::lowest()};
+
+
 template<unsigned N>
 using ScalarArray = std::array<scalar_t, N>;
 
@@ -110,7 +114,7 @@ constexpr scalar_t mag(Vector2 const & vector)
 
 constexpr Vector2 unitVector(Vector2 const & vector)
 {
-    return vector / mag(vector);
+    return vector / (mag(vector) + TOL);
 }
 
 

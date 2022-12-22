@@ -42,6 +42,66 @@ private:
 };
 
 
+struct Rectangle
+    : public ConvexPolygon<4>
+{
+    constexpr Rectangle(Vector2 const lwr_left, Vector2 const upr_right)
+        : ConvexPolygon<4>
+        {{
+            lwr_left,
+            lwr_left + Vector2{upr_right[0] - lwr_left[0], 0},
+            upr_right,
+            upr_right - Vector2{upr_right[0] - lwr_left[0], 0}
+        }}
+        , center{0.5*(lwr_left + upr_right)}
+        , width{upr_right[0] - lwr_left[0]}
+        , height{upr_right[1] - lwr_left[0]}
+    {}
+
+    Vector2 const center;
+    scalar_t const width;
+    scalar_t const height;
+
+    constexpr bool contains(Vector2 const pt) const
+    {
+        auto isNotContained = [&]() -> bool
+        {
+            auto const xmin {vertices[0][0]};  // lwr_left  @ x
+            auto const xmax {vertices[1][0]};  // lwr_right @ x
+            auto const ymin {vertices[0][1]};  // lwr_left  @ y
+            auto const ymax {vertices[2][1]};  // upr_right @ y
+
+            return (pt[0] <= xmin)
+                 | (pt[0] >  xmax)
+                 | (pt[1] <= ymin)
+                 | (pt[1] >  ymax);
+        };
+        return !isNotContained();
+    }
+
+    constexpr bool overlaps(Rectangle const & other) const
+    {
+        auto isNotOverlapping = [&]() -> bool
+        {
+            auto const xmin {vertices[0][0]};  // lwr_left  @ x
+            auto const xmax {vertices[1][0]};  // lwr_right @ x
+            auto const ymin {vertices[0][1]};  // lwr_left  @ y
+            auto const ymax {vertices[2][1]};  // upr_right @ y
+
+            auto const o_xmin {other.vertices[0][0]};
+            auto const o_xmax {other.vertices[1][0]};
+            auto const o_ymin {other.vertices[0][1]};
+            auto const o_ymax {other.vertices[2][1]};
+
+            return xmin > o_xmax || xmax < o_xmin ||
+                   ymax < o_ymin || ymin > o_ymax;
+        };
+        return !isNotOverlapping();
+    }
+
+};
+
+
 template<label_t NVerts>
 constexpr ConvexPolygon<NVerts> makeCircle(scalar_t const radius)
 {
@@ -56,13 +116,5 @@ constexpr ConvexPolygon<NVerts> makeCircle(scalar_t const radius)
     }
     return ConvexPolygon<NVerts>(vertices);
 }
-
-
-constexpr ConvexPolygon<4> makeRectangle(Vector2 lwr_left, Vector2 upr_right)
-{
-    Vector2 const dx {upr_right[0] - lwr_left[0], 0};
-    return ConvexPolygon<4>{{lwr_left, lwr_left + dx, upr_right, upr_right - dx}};
-}
-
 
 #endif

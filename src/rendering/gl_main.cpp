@@ -61,7 +61,6 @@ run(GLFWwindow * const window)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        physics.advance();
         render::drawTriangleGroups();
         render::drawBoundary();
 
@@ -70,6 +69,8 @@ run(GLFWwindow * const window)
 
         /* Poll for and process events */
         glfwPollEvents();
+
+        physics.advance();
     }
     glfwTerminate();
 }
