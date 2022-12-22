@@ -129,11 +129,11 @@ TEST(Collision, boundaryWallCollision)
 
     auto & tri_manager {TrianglesManager::getSingleton()};
     constexpr auto circle {makeCircle<36>(1)};
-    tri_manager.addGroup<circle.n_triangles>
+    tri_manager.addGroup
     (
         {{1/sqrt(2) + TOL, 1/sqrt(2) + TOL}},  // Just outside
         {{0.5, 0.5}},
-        circle.triangles
+        circle
     );
     TriangleGroup & g {tri_manager.getTriangleGroups()[0]};
 

@@ -66,7 +66,6 @@ rigidWallCollision
     Vector2 const & inward_wall_normal, Vector2 & velocity
 )
 {
-
     scalar_t const v1_n {dot(velocity, inward_wall_normal)};
     if (v1_n < 0)
     {
@@ -83,12 +82,12 @@ boundaryCollision(std::vector<Segment2> const & boundary_segments, TriangleGroup
     {
         Vector2 const segment_direction{boundary[1] - boundary[0]};
         Vector2 const inward_normal{-segment_direction[1], segment_direction[0]};
-
-        if ( dot(g.position - boundary[0], inward_normal) < 0 )  // This test is only valid if boundary_segments form a convex polygon!!!
+        Vector2 const ref_pt{boundary[0] + inward_normal*g.influence_radius};  // accounting for ball radius
+        if ( dot(g.position - ref_pt, inward_normal) < 0 )  // This test is only valid if boundary_segments form a convex polygon!!!
         {
             //- This is the segment to collide with
             rigidWallCollision(unitVector(inward_normal), g.velocity);
-            break;
+            return;
         }
     }
 }

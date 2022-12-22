@@ -10,12 +10,19 @@ getSingleton()
 }
 
 
-
 std::vector<Segment2> const &
 BoundariesManager::
 getBoundary() const
 {
     return _boundary;
+}
+
+
+Rectangle const &
+BoundariesManager::
+getBoundingBox() const
+{
+    return *_bbox;
 }
 
 

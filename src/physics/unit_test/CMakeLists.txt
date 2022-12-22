@@ -7,5 +7,5 @@ target_include_directories(
     ${PROJECT_SOURCE_DIR}/src/
 )
 
-add_test(NAME Test_collision
+add_test(NAME TestCollision
          COMMAND TestCollision)
