@@ -29,20 +29,23 @@ scalar_t randomScalar()
 int main(void)
 {
     auto & tri_manager {TrianglesManager::getSingleton()};
-    constexpr auto circle = makeCircle<6>(0.05);
-
-    for (int i{0}; i < 10; ++i)
+    for (int i{0}; i < 24; ++i)
     {
-        tri_manager.addGroup<circle.n_triangles>
+        auto circle = makeCircle<12>(std::max(0.02, 0.05*abs(randomScalar())));
+        tri_manager.addGroup
         (
             randomVector(),
             randomVector(),
-            circle.triangles
+            circle
         );
     }
 
     auto & bdry_manager {BoundariesManager::getSingleton()};
-    constexpr auto domain{makeCircle<36>(1)};
+
+    constexpr Vector2 c1{-0.9, -0.9};
+    constexpr Vector2 c2{+0.9, +0.9};
+    constexpr Rectangle domain{c1, c2};
+
     bdry_manager.setBoundary(domain);
 
     GLFWwindow * const window{render::glInitialize()};

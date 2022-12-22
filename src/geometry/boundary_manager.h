@@ -2,9 +2,11 @@
 #define BOUNDARIES_MANAGER_H_
 
 
+#include "bounding_box.h"
 #include "polygon.h"
 #include "segment.h"
 #include "triangle_group.h"
+
 #include <vector>
 #include <memory>
 
@@ -21,12 +23,16 @@ public:
     );
 
     std::vector<Segment2> const & getBoundary() const;
+    Rectangle const & getBoundingBox() const;
     TriangleGroup const & getDomain() const;
 
 private:
     BoundariesManager() = default;
+    BoundariesManager(BoundariesManager const & other) = delete;
+    BoundariesManager(BoundariesManager&& other) = delete;
     std::unique_ptr<TriangleGroup> _group;
     std::vector<Segment2> _boundary;
+    std::unique_ptr<Rectangle> _bbox;
 };
 
 
@@ -60,9 +66,10 @@ setBoundary
         _boundary[v_id] = {polygon.vertices[v_id], polygon.vertices[v_id + 1]};
     }
     _boundary[n-1] = {polygon.vertices[n-1], polygon.vertices[0]};
+
+    _bbox = std::make_unique<Rectangle>(algo::getBoundingBox(_boundary));
 }
 
 
 #endif
-
 

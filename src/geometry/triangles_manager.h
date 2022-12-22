@@ -13,12 +13,12 @@ class TrianglesManager
 public:
     static TrianglesManager & getSingleton();
 
-    template<label_t n>
+    template<label_t N>
     void addGroup
     (
         Vector2 position,
         Vector2 velocity,
-        std::array<Triangle2, n> const & triangles
+        ConvexPolygon<N> const & polygon
     );
 
     std::vector<TriangleGroup> & getTriangleGroups();
@@ -33,14 +33,14 @@ private:
 //- Template function Implementation
 
 
-template<label_t n>
+template<label_t N>
 void
 TrianglesManager::
 addGroup
 (
     Vector2 position,
     Vector2 velocity,
-    std::array<Triangle2, n> const & triangles
+    ConvexPolygon<N> const & polygon
 )
 {
     TriangleGroup & group
@@ -52,10 +52,18 @@ addGroup
         )
     };
 
-    for (auto const & triangle : triangles)
+    for (auto const & triangle : polygon.triangles)
     {
         group.addTriangle(triangle);
     }
+
+    for (label_t v_id{0}; v_id != (N - 1); ++v_id)
+    {
+        Segment2 bdry {polygon.vertices[v_id], polygon.vertices[v_id + 1]};
+        group.addBoundarySegment(std::move(bdry));
+    }
+    Segment2 bdry {polygon.vertices[N-1], polygon.vertices[0]};
+    group.addBoundarySegment(std::move(bdry));
 }
 
 

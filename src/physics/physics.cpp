@@ -1,6 +1,7 @@
 #include "physics.h"
 
 #include "collision.h"
+#include "geometry/quad_tree.h"
 #include "geometry/triangle_algo.h"
 #include "geometry/triangle_group.h"
 
@@ -39,7 +40,6 @@ Physics::
 advanceGroup(TriangleGroup & tri_group, scalar_t const dt) const
 {
     tri_group.position += tri_group.velocity * dt;
-    tri_group.orientation += tri_group.orientation_velocity*dt;
     // TODO: Handle external forces
     // tri_group.velocity += Physics::externalForces(tri_group) * dt;
     // TODO: Handle orientation
@@ -52,34 +52,57 @@ advance()
 {
     scalar_t const dt = timeSince(last_time);
     last_time = timeNow();
-    std::cout << "Time elapsed: " << timeSince(start_time) << std::endl;
-
     std::vector<TriangleGroup> & tri_groups{tri_manager.getTriangleGroups()};
+
+    scalar_t energy = 0;
+    scalar_t linMom = 0;
+
+    auto computeEnergy = [](TriangleGroup const & g) -> scalar_t
+    {
+        return 0.5*(g.area*magSqr(g.velocity)) + 0.5*g.moment_of_inertia*g.angular_velocity*g.angular_velocity;
+    };
+
+    auto linMomentum = [](TriangleGroup const & g) -> scalar_t
+    {
+        return g.area*mag(g.velocity);
+    };
+
     for (auto & tri_group : tri_groups)
     {
+        energy += computeEnergy(tri_group);
+        linMom += linMomentum(tri_group);
         advanceGroup(tri_group, dt);
     }
 
-    std::vector<Segment2> const & bdry{BoundariesManager::getSingleton().getBoundary()};
-    for (TriangleGroup & tri_group : tri_groups)
+    std::cout << "Time elapsed: " << timeSince(start_time)
+              << " FPS=" << 1.f/dt << std::endl
+              << "energy: " << energy
+              << " momentum: " << linMom
+              << std::endl;
+
+    for(auto & group : tri_groups)
     {
-        algo::boundaryCollision(bdry, tri_group);  // if all inside, no collision will happen
+        algo::boundaryCollision(bdry_manager.getBoundary(), group);
     }
 
-
-    if (tri_groups.size() <= 1) return;
-
-    // TODO: Use nearest-neighbours to optimize this code
-    for(label_t gid{0}; gid != tri_groups.size() - 1; ++gid)
+    QuadTree qt{bdry_manager.getBoundingBox()};
+    for (auto & group : tri_groups)
     {
-        for(label_t ngid{gid + 1}; ngid != tri_groups.size(); ++ngid)
+        qt.insert(QuadTreeNode::make(group.position, group.ptr.get()));
+    }
+
+    for (auto & group : tri_groups)
+    {
+        auto found_groups {qt.query(algo::getBoundingBox(group, 2*group.influence_radius))};
+        for (auto & neighbour_node : found_groups)
         {
-            if (algo::areOverlapping(tri_groups[gid], tri_groups[ngid]))
+            TriangleGroup ** neighbour
             {
-                algo::pointMassRigidCollision
-                (
-                    tri_groups[gid], tri_groups[ngid]
-                );
+                static_cast<TriangleGroup**>(neighbour_node.data)
+            };
+            if (algo::areOverlapping(group, **neighbour))
+            {
+                algo::pointMassRigidCollision(group, **neighbour);
                 break;
             }
         }
