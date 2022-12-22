@@ -26,7 +26,7 @@ class QuadTree
 {
 public:
     // Boundary must have edges parallel to either horizontal or vertical axis
-    QuadTree(Rectangle boundary, label_t capacity=4);
+    QuadTree(Rectangle boundary, label_t capacity=2);
 
     bool insert(QuadTreeNode const & node);
 
