@@ -172,3 +172,31 @@ drawQuadTree()
     glDrawArrays(GL_LINES, 0, int(n_vertices));
 }
 
+
+void
+render::
+mouseCallBack(GLFWwindow* window, int button, int action, [[maybe_unused]] int mods)
+{
+    if (!(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS))
+    {
+        return;
+    }
+
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+
+    //- Mapping between -1 and 1
+    xpos = -1 + 2*xpos/render::window_width;
+    ypos = -1 + 2*(render::window_height - ypos) / render::window_height;
+
+    std::lock_guard lck(render::mtx);
+    TrianglesManager & manager {TrianglesManager::getSingleton()};
+    auto const circle{makeCircle<12>(0.03)};
+
+    manager.addGroup
+    (
+        Vector2{static_cast<scalar_t>(xpos), static_cast<scalar_t>(ypos)},
+        Vector2{0, 0},
+        circle
+    );
+}

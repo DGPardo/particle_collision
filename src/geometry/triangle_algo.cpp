@@ -41,6 +41,7 @@ getBarycentricCoordinates(Triangle2 const & vertices, Vector2 const & pt)
         (v1[1] - v2[1])*(v0[0] - v2[0])
       + (v2[0] - v1[0])*(v0[1] - v2[1])
     };
+
     detT = (detT > 0) ? (detT + TOL) : (detT - TOL);
 
     std::array<scalar_t, 3> coords;
