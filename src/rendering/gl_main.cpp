@@ -25,7 +25,14 @@ glInitialize()
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Particle Collision Simulation", NULL, NULL);
+    window = glfwCreateWindow
+    (
+        render::window_width,
+        render::window_height,
+        "Particle Collision Simulation",
+        NULL,
+        NULL
+    );
     if (!window)
     {
         glfwTerminate();
@@ -40,6 +47,8 @@ glInitialize()
         throw std::runtime_error{"Could not initialize glew"};
     }
     std::cout << glGetString(GL_VERSION) << std::endl;
+
+    glfwSetMouseButtonCallback(window, render::mouseCallBack);
 
     // TODO Abstract buffers
     unsigned int bufferId;

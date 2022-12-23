@@ -12,10 +12,10 @@
 struct QuadTreeNode
 {
     Vector2 position;
-    void* data;
+    void * data;
 
     template<class T>
-    static constexpr QuadTreeNode make(Vector2 position, T * data)
+    static constexpr QuadTreeNode make(Vector2 position, T * const data)
     {
         return QuadTreeNode(std::move(position), static_cast<void*>(data));
     }
