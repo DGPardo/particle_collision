@@ -88,7 +88,7 @@ advance()
     QuadTree qt{bdry_manager.getBoundingBox()};
     for (auto & group : tri_groups)
     {
-        qt.insert(QuadTreeNode::make(group.position, group.ptr.get()));
+        qt.insert(QuadTreeNode::make(group.position, &group));
     }
 
     for (auto & group : tri_groups)
@@ -96,13 +96,13 @@ advance()
         auto found_groups {qt.query(algo::getBoundingBox(group, 2*group.influence_radius))};
         for (auto & neighbour_node : found_groups)
         {
-            TriangleGroup ** neighbour
+            TriangleGroup & neighbour
             {
-                static_cast<TriangleGroup**>(neighbour_node.data)
+                *static_cast<TriangleGroup*>(neighbour_node.data)
             };
-            if (algo::areOverlapping(group, **neighbour))
+            if (algo::areOverlapping(group, neighbour))
             {
-                algo::pointMassRigidCollision(group, **neighbour);
+                algo::pointMassRigidCollision(group, neighbour);
                 break;
             }
         }

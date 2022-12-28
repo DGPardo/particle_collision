@@ -137,11 +137,11 @@ drawQuadTree()
     BoundariesManager & boundaries {BoundariesManager::getSingleton()};
     TrianglesManager & tri_manager{physics.tri_manager};
 
-    std::vector<TriangleGroup> const & groups {tri_manager.getTriangleGroups()};
+    std::vector<TriangleGroup> & groups {tri_manager.getTriangleGroups()};
     QuadTree qt{boundaries.getBoundingBox()};
     for (auto & group : groups)
     {
-        qt.insert(QuadTreeNode::make(group.position, group.ptr.get()));
+        qt.insert(QuadTreeNode::make(group.position, &group));
     }
     lck.unlock();
 

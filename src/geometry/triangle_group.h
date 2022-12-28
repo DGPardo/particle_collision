@@ -47,8 +47,6 @@ public:
 
     scalar_t influence_radius;
 
-    std::unique_ptr<TriangleGroup *> ptr; // indirect access (move safe)
-
 private:
     std::vector<Triangle2> _triangles;  // this coordinates are relative to position
     std::vector<Segment2> _boundary;

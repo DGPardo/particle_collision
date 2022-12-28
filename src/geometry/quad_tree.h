@@ -15,9 +15,9 @@ struct QuadTreeNode
     void * data;
 
     template<class T>
-    static constexpr QuadTreeNode make(Vector2 position, T * const data)
+    static constexpr QuadTreeNode make(Vector2 position, T * data)
     {
-        return QuadTreeNode(std::move(position), static_cast<void*>(data));
+        return QuadTreeNode(std::move(position), static_cast<void *>(data));
     }
 };
 
