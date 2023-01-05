@@ -9,6 +9,21 @@
 #include <math.h>
 
 
+/*----------------------------------------------------------------------------*\
+Name:   ConvexPolygon
+Intent: 
+    Generate a convex polygon of a given N vertices. The polygon is triangulated
+    on construction time by using a "fan" algorithm.
+
+    The object stores the vertices as well as the triangulation information.
+    Vertices are oriented counter-clockwise, therefore defining at the same time
+    the boundary information.
+
+Limitations:
+    
+\*----------------------------------------------------------------------------*/
+
+
 template<label_t NVerts>
 struct ConvexPolygon
 {

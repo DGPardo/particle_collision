@@ -10,6 +10,23 @@
 #include <thread>
 
 
+// namespace
+// {
+// std::chrono::high_resolution_clock::time_point timeNow()
+// {
+//     return std::chrono::high_resolution_clock::now();
+// }
+
+
+// scalar_t timeSince(std::chrono::high_resolution_clock::time_point const & ref_time)
+// {
+//     using duration = std::chrono::duration<scalar_t>;
+//     duration time_counts = timeNow() - ref_time;
+//     return time_counts.count();
+// }
+// }
+
+
 GLFWwindow *
 render::
 glInitialize()

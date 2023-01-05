@@ -1,63 +1,55 @@
 #include "geometry/polygon.h"
 #include "geometry/triangles_manager.h"
 #include "geometry/boundary_manager.h"
+#include "math/math_random.h"
 #include "rendering/gl_main.h"
 
-#include <random>
 #include <ctime>
+#include <iostream>
 
-
-static int seed{42};
-
-
-scalar_t randomScalar()
-{
-    std::srand(seed++);
-    auto const r1 {scalar_t(std::rand())};
-    auto const r2 {scalar_t(std::rand())};
-    auto const range(scalar_t(RAND_MAX));
-    return r1/range - r2/range;
-}
-
-
-    Vector2 randomVector()
-{
-    return {randomScalar(), randomScalar()};
-}
 
 
 int main(void)
 {
-    auto & tri_manager {TrianglesManager::getSingleton()};
+    //- Pseudo-random
+    std::srand(algo::prandom_seed);
 
-    scalar_t x{-0.8}, y{-0.8};
-    for (int i{0}; i < 50; ++i)
+    //- Define Rigid Boundary
+    auto & bdry_manager {BoundariesManager::getSingleton()};
+    
+    constexpr scalar_t width{1.8};
+    constexpr scalar_t height{1.8};
+
+    constexpr Vector2 c1{-width/2, -height/2};  // +- 1 are the window borders
+    constexpr Vector2 c2{+width/2, +height/2};
+    constexpr Rectangle domain{c1, c2};
+    
+    bdry_manager.setBoundary(domain);
+    
+    //- Define number of vertices representing a circle
+    constexpr label_t nverts{12};
+
+    //- Define particle min and max radius
+    scalar_t min_radius{0.01};
+    scalar_t max_radius{0.05};
+
+    //- Define initial state: Number of particles, position and velocity
+    auto & tri_manager {TrianglesManager::getSingleton()};
+    for (int i{0}; i < 25; ++i)
     {
-        auto circle = makeCircle<12>(std::max(0.01, 0.05*abs(randomScalar())));
+        auto const radius{algo::randomScalar(min_radius, max_radius)};
+        auto const circle{makeCircle<nverts>(radius)};
+
+        auto const x{algo::randomScalar(-width/2 + radius, width/2 - radius)};
+        auto const y{algo::randomScalar(-height/2 + radius, height/2 - radius)};
+
         tri_manager.addGroup
         (
-            Vector2{x, y},
-            randomVector(),
+            Vector2{x, y},  // Position
+            algo::randomVector(-0.5, 0.5), // Velocity components between -0.5 and 0.5 m/s
             circle
         );
-        if (x < 0.8)
-        {
-            x += 0.1;
-        }
-        else
-        {
-            x = -0.8;
-            y += 0.1;
-        }
     }
-
-    auto & bdry_manager {BoundariesManager::getSingleton()};
-
-    constexpr Vector2 c1{-0.9, -0.9};
-    constexpr Vector2 c2{+0.9, +0.9};
-    constexpr Rectangle domain{c1, c2};
-
-    bdry_manager.setBoundary(domain);
 
     GLFWwindow * const window{render::glInitialize()};
     render::run(window);

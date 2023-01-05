@@ -47,10 +47,7 @@ conan_basic_setup()
 ################################################################################
 # Global Definitions
 add_compile_definitions(scalar_t=float)
-
-# add_compile_definitions does not handle spaces
-set(LABEL_T_STR "unsigned long long int")
-add_compile_definitions(label_t=${LABEL_T_STR})
+add_compile_definitions(label_t=size_t)
 
 
 ################################################################################

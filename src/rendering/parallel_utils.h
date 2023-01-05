@@ -8,7 +8,7 @@
 namespace render
 {
 
-static std::mutex mtx;
+static std::mutex mtx{};
 
 }
 

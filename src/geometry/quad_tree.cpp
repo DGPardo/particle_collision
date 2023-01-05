@@ -44,10 +44,10 @@ insert(QuadTreeNode const & node)
         _points.clear();
     }
 
-    if (north_east->insert(node)) return true;
-    if (north_west->insert(node)) return true;
-    if (south_west->insert(node)) return true;
-    if (south_east->insert(node)) return true;
+    if (north_east->insert(node)) {return true;}
+    if (north_west->insert(node)) {return true;}
+    if (south_west->insert(node)) {return true;}
+    if (south_east->insert(node)) {return true;}
 
     return false;
 }

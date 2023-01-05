@@ -11,6 +11,18 @@
 #include <memory>
 
 
+/*----------------------------------------------------------------------------*\
+Name:   BoundariesManager
+Intent: 
+    This class contains one and only boundary that will be used to limit the 
+    position of the different particles colliding with each other
+
+Limitations:
+    Boundary can only be 2D. Boundary is only implemented via collection
+    of Segments
+\*----------------------------------------------------------------------------*/
+
+
 class BoundariesManager
 {
 public:

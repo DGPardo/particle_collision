@@ -9,6 +9,20 @@
 #include <vector>
 
 
+/*----------------------------------------------------------------------------*\
+Name:   TriangleGroup
+Intent: 
+    This object is reponsible for tracking the state (position and velocity)
+    of the different particles (triangulated polygons)
+    
+    Stored coordinates are relative the group position. The methods containing
+    the infix "Abs" compute position in global coordinates.
+
+Limitations:
+    
+\*----------------------------------------------------------------------------*/
+
+
 class TriangleGroup
 {
 public:
@@ -30,10 +44,10 @@ public:
     void addBoundarySegment(Segment2 coords);
 
     std::vector<Triangle2> const & getTriangles() const;
-    std::vector<Triangle2> getAbsTriangles() const;
+    std::vector<Triangle2> getAbsTriangles() const;  // Transformed to global coordinates
 
     std::vector<Segment2> const & getBoundary() const;
-    std::vector<Segment2> getAbsBoundary() const;
+    std::vector<Segment2> getAbsBoundary() const;  // Transformed to global coordinates
 
     //- member attributes
     Vector2 position;

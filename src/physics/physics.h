@@ -11,6 +11,20 @@
 class TriangleGroup;
 
 
+
+/*----------------------------------------------------------------------------*\
+Name:   Physics
+Intent: 
+    Manages physical models and time advancement. Evaluates the collision 
+    algorithm every time step.
+
+Limitations:
+    Between time steps, there could collision misses.
+    An object is allowed to collide only once per time step.
+    
+\*----------------------------------------------------------------------------*/
+
+
 class Physics
 {
 public:

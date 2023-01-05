@@ -16,8 +16,8 @@ TriangleGroup
   , moment_of_inertia{0}
   , influence_radius{0}
 {
-  _triangles.reserve(3*100);  // Reserve for 100 triangles
-  _boundary.reserve(100);
+  _triangles.reserve(3*20);  // Reserve for 20 triangles
+  _boundary.reserve(20);
 }
 
 

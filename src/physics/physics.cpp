@@ -75,10 +75,10 @@ advance()
     }
 
     std::cout << "Time elapsed: " << timeSince(start_time)
-              << " FPS=" << 1.f/dt << std::endl
+              << " FPS=" << 1.f/dt << "\n"
               << "energy: " << energy
               << " momentum: " << linMom
-              << std::endl;
+              << "\n";
 
     for(auto & group : tri_groups)
     {

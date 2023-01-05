@@ -8,6 +8,18 @@
 #include <vector>
 
 
+/*----------------------------------------------------------------------------*\
+Name:   TrianglesManager
+Intent: 
+    Owns and tracks all particles and their states. It is used to add or remove
+    particles from the simulation.
+
+Limitations:
+    Misuse of a Singleton pattern may cause undesired behaviour
+    
+\*----------------------------------------------------------------------------*/
+
+
 class TrianglesManager
 {
 public:

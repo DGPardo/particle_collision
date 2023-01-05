@@ -5,6 +5,8 @@
 #include "geometry/quad_tree.h"
 #include "geometry/triangle_group.h"
 
+#include "math/math_random.h"
+
 #include "physics/physics.h"
 
 #include "rendering/parallel_utils.h"
@@ -14,6 +16,8 @@
 #include "GLFW/glfw3.h"
 
 
+#include <functional>
+#include <map>
 #include <mutex>
 
 
@@ -45,6 +49,84 @@ getQuadTreeVertices(QuadTree const * const qt, std::vector<Vector2> & vertices)
     vertices.push_back(qt->boundary.vertices[0]);
     lck.unlock();
 }
+
+
+void setPosition(GLFWwindow* window, double &xpos, double &ypos)
+{
+    glfwGetCursorPos(window, &xpos, &ypos);
+
+    //- Mapping between -1 and 1
+    xpos = -1 + 2*xpos/render::window_width;
+    ypos = -1 + 2*(render::window_height - ypos) / render::window_height;
+}
+
+
+auto left_click = [](GLFWwindow* window)
+{
+    //- This action will Launch 4 particles along +x, +y, -x and -y directions.
+    
+    double xpos, ypos;
+    setPosition(window, xpos, ypos);
+
+    std::lock_guard lck(render::mtx);
+    TrianglesManager & manager {TrianglesManager::getSingleton()};
+    
+    scalar_t const radius{0.03};
+
+    auto const circle{makeCircle<12>(radius)};
+    manager.addGroup
+    (
+        Vector2{static_cast<scalar_t>(xpos+radius), static_cast<scalar_t>(ypos)},
+        Vector2{0.5, 0},
+        circle
+    );
+    manager.addGroup
+    (
+        Vector2{static_cast<scalar_t>(xpos), static_cast<scalar_t>(ypos+radius)},
+        Vector2{0, 0.5},
+        circle
+    );
+    manager.addGroup
+    (
+        Vector2{static_cast<scalar_t>(xpos-radius), static_cast<scalar_t>(ypos)},
+        Vector2{-0.5, 0},
+        circle
+    );
+    manager.addGroup
+    (
+        Vector2{static_cast<scalar_t>(xpos), static_cast<scalar_t>(ypos-radius)},
+        Vector2{0, -0.5},
+        circle
+    );
+};
+
+
+auto right_click = [](GLFWwindow* window)
+{
+    //- This action add a stopped particle at the given position
+    double xpos, ypos;
+    setPosition(window, xpos, ypos);
+    
+    scalar_t const radius{0.03};
+    auto const circle{makeCircle<12>(radius)};
+
+    TrianglesManager & manager {TrianglesManager::getSingleton()};
+    manager.addGroup
+    (
+        Vector2{static_cast<scalar_t>(xpos), static_cast<scalar_t>(ypos)},
+        algo::randomVector(0, 0),
+        circle
+    );    
+    
+};
+
+
+std::map<label_t, std::function<void(GLFWwindow*)>> const mouse_actions
+{
+    {GLFW_MOUSE_BUTTON_LEFT, left_click},
+    {GLFW_MOUSE_BUTTON_RIGHT, right_click}
+};
+
 
 }
 
@@ -177,26 +259,13 @@ void
 render::
 mouseCallBack(GLFWwindow* window, int button, int action, [[maybe_unused]] int mods)
 {
-    if (!(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS))
+    if (action != GLFW_PRESS)
     {
         return;
     }
-
-    double xpos, ypos;
-    glfwGetCursorPos(window, &xpos, &ypos);
-
-    //- Mapping between -1 and 1
-    xpos = -1 + 2*xpos/render::window_width;
-    ypos = -1 + 2*(render::window_height - ypos) / render::window_height;
-
-    std::lock_guard lck(render::mtx);
-    TrianglesManager & manager {TrianglesManager::getSingleton()};
-    auto const circle{makeCircle<12>(0.03)};
-
-    manager.addGroup
-    (
-        Vector2{static_cast<scalar_t>(xpos), static_cast<scalar_t>(ypos)},
-        Vector2{0, 0},
-        circle
-    );
+    if (mouse_actions.find(button) == mouse_actions.end())
+    {
+        return;
+    }
+    mouse_actions.at(button)(window);
 }

@@ -9,6 +9,17 @@
 #include <vector>
 
 
+/*----------------------------------------------------------------------------*\
+Name:   QuadTreeNode
+Intent: 
+    Represents a given data point in space and the associated data with it
+
+Limitations:
+    void pointers are to be treated carefully
+    
+\*----------------------------------------------------------------------------*/
+
+
 struct QuadTreeNode
 {
     Vector2 position;
@@ -20,6 +31,25 @@ struct QuadTreeNode
         return QuadTreeNode(std::move(position), static_cast<void *>(data));
     }
 };
+
+
+/*----------------------------------------------------------------------------*\
+Name:   QuadTree
+Intent: 
+    This object allows to sort in 2D space data. The capacity of the quad tree
+    represent how many points can live within the same "Rectangle"
+    
+    Time Complexity:
+        - Insertion O(log(N))
+        - Query O(log(N))
+    
+    Space Complexity
+        - storage O(N)
+
+Limitations:
+    2-Dimensional space sorting
+    
+\*----------------------------------------------------------------------------*/
 
 
 class QuadTree

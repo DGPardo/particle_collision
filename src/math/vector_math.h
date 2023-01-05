@@ -113,7 +113,7 @@ constexpr scalar_t mag(Vector2 const & vector)
 
 constexpr Vector2 unitVector(Vector2 const & vector)
 {
-    return vector / mag(vector);
+    return vector / (mag(vector) + TOL);
 }
 
 
